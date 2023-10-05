@@ -11,7 +11,7 @@ from pydub.silence import split_on_silence
 
 #def concatenate_audio_files(audio_files, output_file, marker_duration_ms=1000, silence_thresh=-40.0, min_silence_len=1000, retained_silence=100):
 
-def concatenate_audio_files(audio_files, output_file, marker_duration_ms=1, silence_thresh=-40.0, min_silence_len=10, retained_silence=1):
+def concatenate_audio_files(audio_files, output_file, marker_duration_ms=1, silence_thresh=-60.0, min_silence_len=10, retained_silence=1):
     marker = AudioSegment.silent(duration=marker_duration_ms)
     retain_silence = AudioSegment.silent(duration=retained_silence)
 
