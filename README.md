@@ -9,5 +9,6 @@ A little work in oceanaudio or something, and you're good.
 
 Also, hoping to add silence clipping to the script's bag of tricks.
 
+(/images/OceanShot.png)
 
 
