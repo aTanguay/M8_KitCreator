@@ -8,8 +8,7 @@ You'll need to have python installed and you'll need these two libraries if you 
 
 pydub</b>
 
-Install them with <i>"pip (or pip3 if that doesn't work) install pydub"</i>
-and <i>"pip (or pip3 if that doesn't work) install customtkinter"</i>
+Install them with <i>"pip (or pip3 if that doesn't work) install pydub customtkinter"</i>
 
 Run the newest M8_KitBasher_0.__.py file.
 
