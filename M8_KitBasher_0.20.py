@@ -131,7 +131,8 @@ def concatenate_audio_files(file_names, output_file, marker_duration_ms=1, silen
 
     print(f"Concatenated audio saved as {output_file}")
     #clear_files(self)
-    messagebox.showinfo("Success", "Files have been merged successfully!")
+    #messagebox.showinfo("Success", f"Files have been merged successfully into {saved_file_name}!")
+    messagebox.showinfo("Success", "Files have been merged successfully.")
     
 
 if __name__ == "__main__":
