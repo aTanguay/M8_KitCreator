@@ -7,7 +7,6 @@ from tkinter import filedialog, messagebox
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
-
 #----------------------------------------------------------------
 # ConcateM8 - A Dirtywave M8 Sliced Wav Kit Maker
 # Seemingly working version with a GUI.
@@ -16,7 +15,6 @@ from pydub.silence import split_on_silence
 # Note: Files are merged in mono. Can't seem to figure this one out.
 
 #----------------------------------------------------------------
-
 
 
 class FileSelectorApp(tk.Tk):
