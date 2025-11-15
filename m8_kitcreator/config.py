@@ -23,6 +23,11 @@ LABEL_FONT = ("Arial", 11)
 LISTBOX_WIDTH = 30
 LISTBOX_HEIGHT = 16
 
+# Progress Bar Configuration
+PROGRESS_BAR_WIDTH = 300
+PROGRESS_BAR_HEIGHT = 20
+STATUS_LABEL_FONT = ("Arial", 10)
+
 # Padding Configuration
 FRAME_PADDING_X = 5
 FRAME_PADDING_Y = 5
@@ -72,6 +77,13 @@ MSG_SUCCESS_TITLE = "Success"
 # Dialog Titles
 DIALOG_SELECT_FILES = "Select WAV Files"
 DIALOG_SAVE_OUTPUT = "Save Merged Kit As"
+
+# Status Messages
+STATUS_READY = "Ready"
+STATUS_PROCESSING = "Processing file {} of {}..."
+STATUS_EXPORTING = "Exporting audio..."
+STATUS_ADDING_CUES = "Adding cue points..."
+STATUS_COMPLETE = "Complete!"
 
 # ============================================================================
 # Error Messages

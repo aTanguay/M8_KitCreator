@@ -5,6 +5,7 @@ Contains all user interface components and event handling.
 """
 
 import os
+import threading
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
@@ -48,6 +49,7 @@ class FileSelectorApp(tk.Tk):
         self._create_title_section()
         self._create_button_section()
         self._create_file_list_section()
+        self._create_progress_section()
         self._create_bottom_buttons()
 
     def _create_title_section(self):
@@ -117,6 +119,29 @@ class FileSelectorApp(tk.Tk):
             height=config.LISTBOX_HEIGHT
         )
         self.file_listbox.pack(pady=10, padx=10)
+
+    def _create_progress_section(self):
+        """Create the progress bar and status label."""
+        self.progress_frame = ctk.CTkFrame(self)
+        self.progress_frame.pack(
+            pady=config.FRAME_PADDING_Y,
+            padx=config.FRAME_PADDING_X
+        )
+
+        self.status_label = ctk.CTkLabel(
+            self.progress_frame,
+            text=config.STATUS_READY,
+            font=config.STATUS_LABEL_FONT
+        )
+        self.status_label.pack(pady=2, padx=5)
+
+        self.progress_bar = ctk.CTkProgressBar(
+            self.progress_frame,
+            width=config.PROGRESS_BAR_WIDTH,
+            height=config.PROGRESS_BAR_HEIGHT
+        )
+        self.progress_bar.pack(pady=5, padx=5)
+        self.progress_bar.set(0)
 
     def _create_bottom_buttons(self):
         """Create the merge and exit buttons."""
@@ -200,7 +225,8 @@ class FileSelectorApp(tk.Tk):
         Prompt for output location and merge selected files.
 
         Validates that files are selected and output directory is writable
-        before proceeding with the merge operation.
+        before proceeding with the merge operation. Runs processing in a
+        background thread to keep the UI responsive.
         """
         # Check if files are selected
         if not self.file_paths:
@@ -229,16 +255,130 @@ class FileSelectorApp(tk.Tk):
             )
             return
 
-        # Process files
-        print(f"Merging {len(self.file_paths)} files into {output_file}...")
-        success = self.processor.concatenate_audio_files(
-            self.file_paths,
-            output_file
-        )
+        # Start processing in background thread
+        self._start_merge_thread(output_file)
+
+    def _start_merge_thread(self, output_file):
+        """
+        Start the merge operation in a background thread.
+
+        Args:
+            output_file: Path for the output WAV file
+        """
+        # Disable buttons during processing
+        self._set_buttons_enabled(False)
+
+        # Reset progress bar
+        self.progress_bar.set(0)
+        self.status_label.configure(text=config.STATUS_PROCESSING.format(1, len(self.file_paths)))
+
+        # Create and start processing thread
+        def process():
+            try:
+                print(f"Merging {len(self.file_paths)} files into {output_file}...")
+                success = self.processor.concatenate_audio_files(
+                    self.file_paths,
+                    output_file,
+                    progress_callback=self._update_progress
+                )
+
+                # Update UI after completion (in main thread)
+                self.after(0, lambda: self._on_merge_complete(success))
+
+            except Exception as e:
+                print(f"Error during merge: {e}")
+                self.after(0, lambda: self._on_merge_error(str(e)))
+
+        thread = threading.Thread(target=process, daemon=True)
+        thread.start()
+
+    def _on_merge_complete(self, success):
+        """
+        Handle merge completion (called in main thread).
+
+        Args:
+            success: True if merge was successful
+        """
+        # Re-enable buttons
+        self._set_buttons_enabled(True)
+
+        # Reset progress bar
+        self.progress_bar.set(0)
+        self.status_label.configure(text=config.STATUS_READY)
 
         # Clear file list on success
         if success:
             self.clear_files()
+
+    def _on_merge_error(self, error_message):
+        """
+        Handle merge errors (called in main thread).
+
+        Args:
+            error_message: Error message to display
+        """
+        # Re-enable buttons
+        self._set_buttons_enabled(True)
+
+        # Reset progress bar
+        self.progress_bar.set(0)
+        self.status_label.configure(text=config.STATUS_READY)
+
+        # Show error dialog
+        messagebox.showerror(
+            "Processing Error",
+            f"An error occurred during processing:\n\n{error_message}"
+        )
+
+    def _set_buttons_enabled(self, enabled):
+        """
+        Enable or disable all buttons during processing.
+
+        Args:
+            enabled: True to enable buttons, False to disable
+        """
+        state = "normal" if enabled else "disabled"
+        self.select_button.configure(state=state)
+        self.clear_button.configure(state=state)
+        self.merge_button.configure(state=state)
+        self.close_button.configure(state=state)
+
+    def _update_progress(self, current, total):
+        """
+        Update progress bar and status label.
+
+        This method is called from the processing thread and uses
+        after() to safely update the UI from the main thread.
+
+        Args:
+            current: Current file being processed (0-indexed)
+            total: Total number of files
+        """
+        # Calculate progress (0.0 to 1.0)
+        if total > 0:
+            progress = current / total
+        else:
+            progress = 0
+
+        # Update UI in main thread
+        self.after(0, lambda: self._update_ui_elements(current, total, progress))
+
+    def _update_ui_elements(self, current, total, progress):
+        """
+        Update UI elements (must be called from main thread).
+
+        Args:
+            current: Current file index
+            total: Total number of files
+            progress: Progress value (0.0 to 1.0)
+        """
+        self.progress_bar.set(progress)
+
+        if current < total:
+            status_text = config.STATUS_PROCESSING.format(current + 1, total)
+            self.status_label.configure(text=status_text)
+        else:
+            self.status_label.configure(text=config.STATUS_COMPLETE)
 
     def close_app(self):
         """Close the application."""
