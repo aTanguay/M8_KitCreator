@@ -10,7 +10,7 @@ pydub</b>
 
 Install them with <i>"pip (or pip3 if that doesn't work) install pydub customtkinter"</i>
 
-Run the newest M8_KitBasher_0.__.py file.
+Run the newest M8_KitBasher_0.23.py file.
 
 To use: You select your files, and the script puts them into one file, with markers (slices) at the start of each sample. It also throws out extra silence.
 
@@ -19,7 +19,8 @@ To use: You select your files, and the script puts them into one file, with mark
 To install, grab the last version that's out there. Getting things set up is not my strong suit, but I'll try and add more install tips, as well as try and get it packed up into a Mac app. I got close, but not quite yet.
 
 This is a python script with a couple dependencies, but nothing weird.
-The biggest issue right now is that it needs to make the files mono to put the slices in the right spot. Not too sure why. Seems like a small price to pay, and maybe someone smarter can fix it. Or I'll take a swing at it. V13 is the version that doesn't make the files mono but puts the markers in the wrong spot. 
+
+**New in v0.23:** Stereo support! The app now preserves stereo files correctly. Previous versions forced mono conversion because the cue point calculation was using sample positions instead of frame positions. This has been fixed - cue points now use the correct frame-based positioning that works with any channel configuration (mono, stereo, or multi-channel). 
 
 Here's the output:
 ![OceanAudio](/images/OceanShot.png)

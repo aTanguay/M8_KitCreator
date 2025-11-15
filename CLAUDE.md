@@ -4,7 +4,7 @@
 
 **M8_KitCreator** (also known as M8_KitBasher) is a Python GUI application that creates sliced WAV audio kits compatible with the Dirtywave M8 hardware sampler. The tool takes multiple WAV files, concatenates them with markers (cue points), removes excess silence, and outputs a single WAV file that the M8 can use as a sliced instrument.
 
-**Current Version:** 0.22 (M8_KitBasher_0.22.py)
+**Current Version:** 0.23 (M8_KitBasher_0.23.py)
 **Language:** Python 3.x
 **Author:** Andy Tanguay
 **License:** MIT
@@ -15,7 +15,7 @@
 - Select multiple WAV files via GUI
 - Concatenate files with 1ms silent markers between each sample
 - Remove silence from audio (configurable threshold: -50dBFS, min 10ms)
-- Convert audio to mono (required for correct cue point positioning)
+- **Preserve stereo or mono** (v0.23+) - Correctly calculates cue points for any channel count
 - Insert WAV cue chunks at the start of each sample slice
 - Export single WAV file ready for M8 import
 
@@ -25,10 +25,12 @@
 
 ```
 M8_KitCreator/
-├── M8_KitBasher_0.22.py          # LATEST - Current production version (181 lines)
+├── M8_KitBasher_0.23.py          # LATEST - Current production version with stereo support
 ├── setup.py                      # py2app macOS bundling config
 ├── README.md                     # User-facing documentation
 ├── CLAUDE.md                     # AI assistant guide (this file)
+├── TASKS.md                      # Improvement tasks and roadmap
+├── STEREO_FIX_ANALYSIS.md       # Technical analysis of stereo fix
 ├── LICENSE                       # MIT license
 ├── Records_01.png                # Documentation screenshot
 ├── versions/                     # ALL archived versions and prototypes
@@ -44,6 +46,7 @@ M8_KitCreator/
 │   ├── M8_KitBasher_0.14.py     # First version with mono fix
 │   ├── M8_KitBasher_0.20.py     # First customtkinter version
 │   ├── M8_KitBasher_0.21.py     # Previous version with error handling
+│   ├── M8_KitBasher_0.22.py     # Previous latest (mono only)
 │   ├── InterfaceTest_01.py      # UI prototype experiment
 │   ├── InterfaceTest_02.py      # UI prototype experiment
 │   └── InterfaceTest_03.py      # UI prototype experiment
@@ -54,9 +57,10 @@ M8_KitCreator/
 
 ### Key Files Reference
 
-- **Primary file:** `M8_KitBasher_0.22.py` - Always use this as the main reference (root directory)
+- **Primary file:** `M8_KitBasher_0.23.py` - Always use this as the main reference (root directory)
 - **Setup file:** `setup.py` - For macOS app bundling (currently incomplete)
 - **Archives:** `versions/` folder contains ALL historical implementations and UI prototypes
+- **Analysis docs:** `STEREO_FIX_ANALYSIS.md` explains the stereo cue point fix in detail
 
 ## Architecture
 
