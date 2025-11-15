@@ -23,11 +23,18 @@ block_cipher = None
 # Collect customtkinter data files (themes, assets)
 datas = collect_data_files('customtkinter')
 
+# Collect tkinterdnd2 data files (platform-specific DLLs)
+try:
+    datas += collect_data_files('tkinterdnd2')
+except:
+    pass  # tkinterdnd2 may not be installed during build
+
 # Collect all submodules
 hiddenimports = [
     'pydub',
     'pydub.silence',
     'customtkinter',
+    'tkinterdnd2',
     'PIL._tkinter_finder',
     'm8_kitcreator',
     'm8_kitcreator.config',
@@ -103,8 +110,8 @@ if sys.platform == 'darwin':
             'NSPrincipalClass': 'NSApplication',
             'NSHighResolutionCapable': 'True',
             'LSBackgroundOnly': 'False',
-            'CFBundleShortVersionString': '0.27.0',
-            'CFBundleVersion': '0.27.0',
+            'CFBundleShortVersionString': '0.28.0',
+            'CFBundleVersion': '0.28.0',
             'NSHumanReadableCopyright': 'Copyright © 2023-2025 Andy Tanguay. MIT License.',
         },
     )

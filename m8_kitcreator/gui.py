@@ -10,6 +10,14 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 
+# Try to import tkinterdnd2 for drag-and-drop support
+try:
+    from tkinterdnd2 import DND_FILES, TkinterDnD
+    DND_AVAILABLE = True
+except ImportError:
+    DND_AVAILABLE = False
+    print("Warning: tkinterdnd2 not available. Drag-and-drop support disabled.")
+
 from m8_kitcreator import config
 from m8_kitcreator.audio_processor import AudioProcessor
 from m8_kitcreator.utils import (
@@ -19,12 +27,21 @@ from m8_kitcreator.utils import (
 )
 
 
-class FileSelectorApp(tk.Tk):
+# Choose base class based on drag-and-drop availability
+if DND_AVAILABLE:
+    _BaseWindow = TkinterDnD.Tk
+else:
+    _BaseWindow = tk.Tk
+
+
+class FileSelectorApp(_BaseWindow):
     """
     Main application window for M8 Kit Creator.
 
     Provides a GUI for selecting WAV files, configuring processing parameters,
     and creating M8-compatible sliced audio kits with cue markers.
+
+    Supports drag-and-drop file selection when tkinterdnd2 is available.
     """
 
     def __init__(self):
@@ -43,6 +60,10 @@ class FileSelectorApp(tk.Tk):
 
         # Set up UI
         self._setup_ui()
+
+        # Set up drag-and-drop if available
+        if DND_AVAILABLE:
+            self._setup_drag_and_drop()
 
     def _setup_ui(self):
         """Set up all UI components."""
@@ -383,3 +404,156 @@ class FileSelectorApp(tk.Tk):
     def close_app(self):
         """Close the application."""
         self.destroy()
+
+    def _setup_drag_and_drop(self):
+        """
+        Configure drag-and-drop support for the file list.
+
+        Registers the listbox as a drop target and sets up event handlers
+        for visual feedback and file dropping.
+        """
+        # Register the listbox as a drop target
+        self.file_listbox.drop_target_register(DND_FILES)
+
+        # Bind drag-and-drop events
+        self.file_listbox.dnd_bind('<<DropEnter>>', self._on_drag_enter)
+        self.file_listbox.dnd_bind('<<DropLeave>>', self._on_drag_leave)
+        self.file_listbox.dnd_bind('<<Drop>>', self._on_drop)
+
+        # Update subtitle to indicate drag-and-drop support
+        current_text = self.subtitle_label.cget("text")
+        self.subtitle_label.configure(
+            text=current_text + " (or drag & drop files here)"
+        )
+
+    def _on_drag_enter(self, event):
+        """
+        Handle drag enter event - show visual feedback.
+
+        Args:
+            event: Tkinter event object
+        """
+        # Change listbox background to indicate drop target
+        self.file_listbox.configure(bg='#E8F5E9')  # Light green
+        return event.action
+
+    def _on_drag_leave(self, event):
+        """
+        Handle drag leave event - remove visual feedback.
+
+        Args:
+            event: Tkinter event object
+        """
+        # Restore default background
+        self.file_listbox.configure(bg='white')
+        return event.action
+
+    def _on_drop(self, event):
+        """
+        Handle file drop event.
+
+        Validates dropped files and adds them to the file list.
+
+        Args:
+            event: Tkinter event object containing dropped file paths
+        """
+        # Restore default background
+        self.file_listbox.configure(bg='white')
+
+        # Parse dropped files (tkinterdnd2 returns space-separated paths in curly braces)
+        files = self._parse_dropped_files(event.data)
+
+        if not files:
+            return event.action
+
+        # Validate and add files (same logic as select_files)
+        invalid_files = []
+        valid_count = 0
+
+        for file_path in files:
+            # Check if it's a WAV file
+            if not file_path.lower().endswith('.wav'):
+                invalid_files.append((os.path.basename(file_path), "Not a WAV file"))
+                continue
+
+            # Validate the file
+            is_valid, error_msg = validate_wav_file(file_path)
+            if is_valid:
+                file_name = os.path.basename(file_path)
+                # Check if file is already in the list
+                if file_path not in self.file_paths:
+                    self.file_names.append(file_name)
+                    self.file_paths.append(file_path)
+                    self.file_listbox.insert(tk.END, file_name)
+                    valid_count += 1
+            else:
+                invalid_files.append((os.path.basename(file_path), error_msg))
+
+        # Show status message
+        if valid_count > 0:
+            print(f"Added {valid_count} file(s) via drag-and-drop")
+
+        # Show warning if any files were invalid
+        if invalid_files:
+            error_list = format_file_list_error(invalid_files)
+            messagebox.showwarning(
+                config.MSG_INVALID_FILES_TITLE,
+                f"The following files could not be added:\n\n{error_list}\n\n"
+                f"Valid files added: {valid_count}"
+            )
+
+        return event.action
+
+    def _parse_dropped_files(self, data):
+        """
+        Parse file paths from drag-and-drop event data.
+
+        tkinterdnd2 returns paths in various formats depending on the platform.
+        This method handles the parsing correctly.
+
+        Args:
+            data: Raw data from drop event
+
+        Returns:
+            List of file paths
+        """
+        files = []
+
+        # Handle different formats
+        if isinstance(data, (list, tuple)):
+            files = list(data)
+        else:
+            # String format: either space-separated or with curly braces
+            data = str(data)
+
+            # Remove outer curly braces if present
+            if data.startswith('{') and data.endswith('}'):
+                data = data[1:-1]
+
+            # Split by spaces, but respect curly braces for paths with spaces
+            current = []
+            in_braces = False
+
+            for char in data:
+                if char == '{':
+                    in_braces = True
+                elif char == '}':
+                    in_braces = False
+                    if current:
+                        files.append(''.join(current))
+                        current = []
+                elif char == ' ' and not in_braces:
+                    if current:
+                        files.append(''.join(current))
+                        current = []
+                else:
+                    current.append(char)
+
+            # Add last file if any
+            if current:
+                files.append(''.join(current))
+
+        # Clean up paths
+        files = [f.strip() for f in files if f.strip()]
+
+        return files
