@@ -4,7 +4,7 @@
 
 **M8_KitCreator** (also known as M8_KitBasher) is a Python GUI application that creates sliced WAV audio kits compatible with the Dirtywave M8 hardware sampler. The tool takes multiple WAV files, concatenates them with markers (cue points), removes excess silence, and outputs a single WAV file that the M8 can use as a sliced instrument.
 
-**Current Version:** 0.23 (M8_KitBasher_0.23.py)
+**Current Version:** 0.24 (M8_KitBasher_0.24.py)
 **Language:** Python 3.x
 **Author:** Andy Tanguay
 **License:** MIT
@@ -25,7 +25,7 @@
 
 ```
 M8_KitCreator/
-├── M8_KitBasher_0.23.py          # LATEST - Current production version with stereo support
+├── M8_KitBasher_0.24.py          # LATEST - Refactored with validation and clean code
 ├── setup.py                      # py2app macOS bundling config
 ├── README.md                     # User-facing documentation
 ├── CLAUDE.md                     # AI assistant guide (this file)
@@ -46,7 +46,8 @@ M8_KitCreator/
 │   ├── M8_KitBasher_0.14.py     # First version with mono fix
 │   ├── M8_KitBasher_0.20.py     # First customtkinter version
 │   ├── M8_KitBasher_0.21.py     # Previous version with error handling
-│   ├── M8_KitBasher_0.22.py     # Previous latest (mono only)
+│   ├── M8_KitBasher_0.22.py     # Mono only version
+│   ├── M8_KitBasher_0.23.py     # Stereo support added
 │   ├── InterfaceTest_01.py      # UI prototype experiment
 │   ├── InterfaceTest_02.py      # UI prototype experiment
 │   └── InterfaceTest_03.py      # UI prototype experiment
@@ -57,9 +58,9 @@ M8_KitCreator/
 
 ### Key Files Reference
 
-- **Primary file:** `M8_KitBasher_0.23.py` - Always use this as the main reference (root directory)
+- **Primary file:** `M8_KitBasher_0.24.py` - Always use this as the main reference (root directory)
 - **Setup file:** `setup.py` - For macOS app bundling (currently incomplete)
-- **Archives:** `versions/` folder contains ALL historical implementations and UI prototypes
+- **Archives:** `versions/` folder contains ALL historical implementations and UI prototypes (17 versions)
 - **Analysis docs:** `STEREO_FIX_ANALYSIS.md` explains the stereo cue point fix in detail
 
 ## Architecture
@@ -169,8 +170,8 @@ listbox = tk.Listbox(frame, width=30, height=16)  # tkinter fallback
 
 **Principle:** Keep root directory clean, archive all old versions
 
-- **Latest version only in root:** `M8_KitBasher_0.22.py` (always run this)
-- **All archived versions in `versions/`:** Complete history from 0.01 to 0.21
+- **Latest version only in root:** `M8_KitBasher_0.24.py` (always run this)
+- **All archived versions in `versions/`:** Complete history from 0.01 to 0.23
 - **UI prototypes archived:** `InterfaceTest_XX.py` files in `versions/` folder
 - **Original version archived:** `M8_KitBasher.py` (legacy) in `versions/` folder
 

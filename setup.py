@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['M8_KitBasher_0.23.py']
+APP = ['M8_KitBasher_0.24.py']
 DATA_FILES = []
 OPTIONS = {
 	'argv_emulation': True,
