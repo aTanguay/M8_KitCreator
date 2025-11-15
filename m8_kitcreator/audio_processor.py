@@ -14,6 +14,22 @@ from pydub.silence import split_on_silence
 from m8_kitcreator import config
 from m8_kitcreator.utils import get_channel_description
 
+# Configure pydub to use bundled ffmpeg if available
+try:
+    from staticffmpeg import run
+    # Get the static ffmpeg binary path
+    ffmpeg_path, ffprobe_path = run.get_or_fetch_platform_executables_else_raise()
+    AudioSegment.converter = ffmpeg_path
+    AudioSegment.ffprobe = ffprobe_path
+    print(f"Using bundled ffmpeg: {ffmpeg_path}")
+except ImportError:
+    # static-ffmpeg not available, will use system ffmpeg
+    print("static-ffmpeg not available, using system ffmpeg")
+except Exception as e:
+    # Failed to get ffmpeg, will use system default
+    print(f"Warning: Could not configure static ffmpeg: {e}")
+    print("Will attempt to use system ffmpeg")
+
 
 class AudioProcessor:
     """

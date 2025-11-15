@@ -2,15 +2,39 @@
 
 A simple sliced audio file maker that creates files that are compatible with the M8. The idea here is to be able to take a selection of wav files and mash them into a sliced kit that the M8 likes.
 
-You'll need to have python installed and you'll need these two libraries if you don't have them:
+## Installation
 
-<b>customtkinter (or its abbreviation ctk)
+### Option 1: Download Standalone App (Recommended - No Python Required!)
 
-pydub</b>
+**Coming Soon:** Download ready-to-run executables from [Releases](../../releases):
+- **macOS**: `M8_KitCreator.dmg` - Just drag and drop to Applications!
+- **Linux**: `M8_KitCreator-linux-x86_64.tar.gz` - Extract and run!
 
-Install them with <i>"pip (or pip3 if that doesn't work) install pydub customtkinter"</i>
+No Python, no pip, no dependencies needed - just download and run!
 
-Run the M8_KitBasher.py file.
+### Option 2: Run from Source (For Developers)
+
+If you want to run from source or contribute:
+
+1. **Install Python** 3.7 or later
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+   This installs:
+   - `pydub` - Audio processing
+   - `customtkinter` - Modern UI
+   - `static-ffmpeg` - Bundled ffmpeg (no system install needed!)
+
+3. **Run the application:**
+   ```bash
+   python M8_KitBasher.py
+   ```
+
+### Building From Source
+
+Want to create your own standalone executable? See [BUILD.md](BUILD.md) for complete instructions.
 
 To use: You select your files, and the script puts them into one file, with markers (slices) at the start of each sample. It also throws out extra silence.
 
@@ -18,7 +42,15 @@ To use: You select your files, and the script puts them into one file, with mark
 
 To install, grab the last version that's out there. Getting things set up is not my strong suit, but I'll try and add more install tips, as well as try and get it packed up into a Mac app. I got close, but not quite yet.
 
-This is a python script with a couple dependencies, but nothing weird.
+## What's New
+
+**New in v0.26:** Self-contained distribution!
+- **No Python installation required** - Standalone executables for macOS and Linux
+- **Bundled ffmpeg** - Uses `static-ffmpeg` package, no system ffmpeg needed
+- **One-click builds** - Simple `./build.sh` script creates ready-to-distribute apps
+- **PyInstaller configuration** - Professional build setup with M8_KitCreator.spec
+- **Complete build documentation** - See BUILD.md for creating your own builds
+- **~100MB executables** - Includes everything: Python runtime, libraries, and ffmpeg
 
 **New in v0.25:** Modular architecture!
 - Complete code refactoring into separate modules

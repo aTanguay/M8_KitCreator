@@ -1,0 +1,11 @@
+# M8 Kit Creator - Build Requirements
+# Install with: pip install -r requirements-build.txt
+
+# First install runtime requirements
+-r requirements.txt
+
+# Build Tools
+pyinstaller>=5.0.0
+
+# For macOS app bundling (macOS only)
+# py2app>=0.28.0
