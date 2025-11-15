@@ -1,12 +1,40 @@
 # M8_KitCreator
 
-A simple sliced audio file maker that creates files that are compatible with the M8. The idea here is to be able to take a selection of wav files and mash them into a sliced kit that the M8 likes.
+A modern, user-friendly tool for creating sliced audio kits compatible with the [Dirtywave M8](https://dirtywave.com/) hardware sampler. Simply select your WAV files, and M8_KitCreator will intelligently combine them into a single file with perfectly positioned cue markers that the M8 recognizes as individual slices.
+
+![M8 Kit Creator Interface](/images/app_022.png)
+
+## Features
+
+✨ **Easy to Use**
+- Drag & drop WAV files directly onto the window
+- Simple, clean interface with real-time progress feedback
+- No audio engineering knowledge required
+
+🎵 **Smart Audio Processing**
+- Automatic silence removal with configurable threshold (-50dBFS)
+- Preserves stereo or mono audio (your choice!)
+- Frame-accurate cue point positioning for perfect M8 compatibility
+- 1ms silent markers between samples for clean slicing
+
+⚡ **Modern & Responsive**
+- Real-time progress bar with file-by-file status updates
+- Background processing keeps the UI responsive
+- Visual drag-and-drop feedback
+- Comprehensive file validation with helpful error messages
+
+🔧 **Professional Quality**
+- Self-contained executables (no Python installation needed!)
+- Bundled ffmpeg - works out of the box
+- Cross-platform: macOS and Linux support
+- Modular codebase perfect for automation and scripting
 
 ## Installation
 
-### Option 1: Download Standalone App (Recommended - No Python Required!)
+### Option 1: Download Standalone App (Recommended)
 
 **Coming Soon:** Download ready-to-run executables from [Releases](../../releases):
+
 - **macOS**: `M8_KitCreator.dmg` - Just drag and drop to Applications!
 - **Linux**: `M8_KitCreator-linux-x86_64.tar.gz` - Extract and run!
 
@@ -14,36 +42,70 @@ No Python, no pip, no dependencies needed - just download and run!
 
 ### Option 2: Run from Source (For Developers)
 
-If you want to run from source or contribute:
+If you want to run from source or contribute to development:
 
-1. **Install Python** 3.7 or later
+1. **Install Python 3.7 or later**
 
-2. **Install dependencies:**
+2. **Clone this repository:**
+   ```bash
+   git clone https://github.com/aTanguay/M8_KitCreator.git
+   cd M8_KitCreator
+   ```
+
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
+
    This installs:
-   - `pydub` - Audio processing
-   - `customtkinter` - Modern UI
+   - `pydub` - Audio processing library
+   - `customtkinter` - Modern UI framework
    - `tkinterdnd2` - Drag-and-drop support
    - `static-ffmpeg` - Bundled ffmpeg (no system install needed!)
 
-3. **Run the application:**
+4. **Run the application:**
    ```bash
    python M8_KitBasher.py
    ```
 
 ### Building From Source
 
-Want to create your own standalone executable? See [BUILD.md](BUILD.md) for complete instructions.
+Want to create your own standalone executable? See [BUILD.md](BUILD.md) for complete instructions on building distributable apps for macOS and Linux.
 
-To use: You select your files, and the script puts them into one file, with markers (slices) at the start of each sample. It also throws out extra silence.
+## How to Use
 
-![interface](/images/app_022.png)
+1. **Launch the application**
 
-To install, grab the last version that's out there. Getting things set up is not my strong suit, but I'll try and add more install tips, as well as try and get it packed up into a Mac app. I got close, but not quite yet.
+2. **Add your WAV files** using either method:
+   - Click "Select Files" and choose your WAV files
+   - Drag & drop WAV files directly onto the window
+
+3. **Click "Merge"** to combine them
+
+4. **Choose where to save** your M8-compatible kit
+
+5. **Load the kit on your M8** and start making music! 🎶
+
+The app will automatically:
+- Remove excess silence from each sample
+- Add 1ms markers between samples
+- Insert cue points at the start of each slice
+- Create a single WAV file ready for the M8
+
+### Tips
+
+- Files are processed in the order they appear in the list
+- The app preserves stereo or mono (configure in AudioProcessor if needed)
+- Invalid WAV files are automatically skipped with error messages
+- Progress bar shows real-time processing status
 
 ## What's New
+
+**New in v0.29:** File reordering controls!
+- **Move Up/Down buttons** - Easily reorder files in your kit
+- **Sort A-Z button** - Instantly alphabetize your file list
+- **Numbered display** - Files now show as "1. filename.wav" for clarity
+- **Selection tracking** - Move operations maintain your current selection
 
 **New in v0.28:** Drag-and-drop file support!
 - **Drag & drop files** - Simply drag WAV files directly onto the window
@@ -65,7 +127,6 @@ To install, grab the last version that's out there. Getting things set up is not
 - **One-click builds** - Simple `./build.sh` script creates ready-to-distribute apps
 - **PyInstaller configuration** - Professional build setup with M8_KitCreator.spec
 - **Complete build documentation** - See BUILD.md for creating your own builds
-- **~100MB executables** - Includes everything: Python runtime, libraries, and ffmpeg
 
 **New in v0.25:** Modular architecture!
 - Complete code refactoring into separate modules
@@ -73,19 +134,94 @@ To install, grab the last version that's out there. Getting things set up is not
 - AudioProcessor can now be used without GUI (perfect for automation/CLI)
 - Easier to test, maintain, and extend
 - New package structure: `m8_kitcreator/` with dedicated modules
-- Simple main entry point: `M8_KitBasher.py`
 
 **New in v0.24:** Code quality improvements and validation!
-- Input validation: Files are checked before processing to ensure they're valid WAV files
-- Better error messages: Clear feedback when files can't be loaded or processed
-- Constants extracted: All magic numbers moved to named constants at top of file
-- Cleaner code: Duplicate variable names fixed, better documentation, proper docstrings
-- Improved error handling: Specific error messages for different failure scenarios
+- Input validation: Files are checked before processing
+- Better error messages: Clear feedback when files can't be loaded
+- Constants extracted: All magic numbers moved to named constants
+- Cleaner code: Better documentation and proper docstrings
 
-**New in v0.23:** Stereo support! The app now preserves stereo files correctly. Previous versions forced mono conversion because the cue point calculation was using sample positions instead of frame positions. This has been fixed - cue points now use the correct frame-based positioning that works with any channel configuration (mono, stereo, or multi-channel). 
+**New in v0.23:** Stereo support!
+- The app now preserves stereo files correctly
+- Fixed cue point calculation to use frame positions instead of sample positions
+- Works with mono, stereo, or multi-channel audio
 
-Here's the output:
-![OceanAudio](/images/OceanShot.png)
+## Technical Details
 
+### Audio Processing Parameters
 
+- **Marker Duration:** 1ms silent markers between samples
+- **Silence Threshold:** -50.0 dBFS (configurable)
+- **Minimum Silence Length:** 10ms
+- **Retained Silence:** 1ms between chunks
+- **Cue Point Format:** WAV standard cue chunks with frame-based positioning
 
+### M8 Compatibility
+
+The output WAV files are fully compatible with the Dirtywave M8's slice/kit functionality. The cue chunks follow the WAV standard and use frame-based positioning to ensure correct slice alignment regardless of channel configuration.
+
+### Output Example
+
+Here's what the processed output looks like in an audio editor (showing cue markers):
+
+![Audio Output with Cue Markers](/images/OceanShot.png)
+
+Each vertical line represents a cue point that the M8 uses to identify slice boundaries.
+
+## Project Structure
+
+```
+M8_KitCreator/
+├── M8_KitBasher.py          # Main entry point
+├── m8_kitcreator/           # Core package
+│   ├── config.py           # Configuration constants
+│   ├── utils.py            # Validation and helper functions
+│   ├── audio_processor.py  # Audio processing logic
+│   └── gui.py              # User interface
+├── requirements.txt         # Python dependencies
+├── BUILD.md                # Build instructions
+├── CLAUDE.md               # AI assistant development guide
+└── TASKS.md                # Future improvements roadmap
+```
+
+## Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. **Report bugs** - Open an issue with details about what went wrong
+2. **Suggest features** - Check [TASKS.md](TASKS.md) for planned features or suggest new ones
+3. **Submit pull requests** - Fork, make changes, and submit a PR
+4. **Improve documentation** - Help make the docs clearer and more comprehensive
+
+### Development
+
+The codebase uses a modular architecture with clear separation of concerns:
+- `config.py` - All constants and configuration
+- `utils.py` - Pure helper functions (easy to test)
+- `audio_processor.py` - Audio processing business logic (framework-agnostic)
+- `gui.py` - User interface (can be swapped with CLI or web interface)
+
+See [CLAUDE.md](CLAUDE.md) for comprehensive development documentation.
+
+## Support
+
+- **Issues:** [GitHub Issues](https://github.com/aTanguay/M8_KitCreator/issues)
+- **M8 Community:** [Dirtywave Discord](https://discord.gg/WEavjFNYHh)
+- **Documentation:** Check the [BUILD.md](BUILD.md) and [CLAUDE.md](CLAUDE.md) files
+
+## License
+
+MIT License - See [LICENSE](LICENSE) file for details
+
+Copyright © 2023-2025 Andy Tanguay
+
+## Acknowledgments
+
+- Built for the amazing [Dirtywave M8](https://dirtywave.com/) community
+- Uses [pydub](https://github.com/jiaaro/pydub) for audio processing
+- UI powered by [customtkinter](https://github.com/TomSchimansky/CustomTkinter)
+- Drag-and-drop via [tkinterdnd2](https://github.com/pmgagne/tkinterdnd2)
+
+---
+
+**Made with ❤️ for M8 music makers**

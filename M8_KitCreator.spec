@@ -110,8 +110,8 @@ if sys.platform == 'darwin':
             'NSPrincipalClass': 'NSApplication',
             'NSHighResolutionCapable': 'True',
             'LSBackgroundOnly': 'False',
-            'CFBundleShortVersionString': '0.28.0',
-            'CFBundleVersion': '0.28.0',
+            'CFBundleShortVersionString': '0.29.0',
+            'CFBundleVersion': '0.29.0',
             'NSHumanReadableCopyright': 'Copyright © 2023-2025 Andy Tanguay. MIT License.',
         },
     )
