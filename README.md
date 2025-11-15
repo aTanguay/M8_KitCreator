@@ -101,6 +101,12 @@ The app will automatically:
 
 ## What's New
 
+**New in v0.29:** File reordering controls!
+- **Move Up/Down buttons** - Easily reorder files in your kit
+- **Sort A-Z button** - Instantly alphabetize your file list
+- **Numbered display** - Files now show as "1. filename.wav" for clarity
+- **Selection tracking** - Move operations maintain your current selection
+
 **New in v0.28:** Drag-and-drop file support!
 - **Drag & drop files** - Simply drag WAV files directly onto the window
 - **Visual feedback** - Listbox highlights in green when dragging files over

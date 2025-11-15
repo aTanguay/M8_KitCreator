@@ -70,6 +70,7 @@ class FileSelectorApp(_BaseWindow):
         self._create_title_section()
         self._create_button_section()
         self._create_file_list_section()
+        self._create_reorder_section()
         self._create_progress_section()
         self._create_bottom_buttons()
 
@@ -140,6 +141,50 @@ class FileSelectorApp(_BaseWindow):
             height=config.LISTBOX_HEIGHT
         )
         self.file_listbox.pack(pady=10, padx=10)
+
+    def _create_reorder_section(self):
+        """Create the file reordering buttons."""
+        self.reorder_frame = ctk.CTkFrame(self)
+        self.reorder_frame.pack(
+            pady=config.FRAME_PADDING_Y,
+            padx=config.FRAME_PADDING_X
+        )
+
+        self.move_up_button = ctk.CTkButton(
+            self.reorder_frame,
+            text="Move Up",
+            command=self.move_file_up,
+            width=100
+        )
+        self.move_up_button.grid(
+            row=0, column=0,
+            padx=config.BUTTON_PADDING_X,
+            pady=config.BUTTON_PADDING_Y
+        )
+
+        self.move_down_button = ctk.CTkButton(
+            self.reorder_frame,
+            text="Move Down",
+            command=self.move_file_down,
+            width=100
+        )
+        self.move_down_button.grid(
+            row=0, column=1,
+            padx=config.BUTTON_PADDING_X,
+            pady=config.BUTTON_PADDING_Y
+        )
+
+        self.sort_button = ctk.CTkButton(
+            self.reorder_frame,
+            text="Sort A-Z",
+            command=self.sort_files,
+            width=100
+        )
+        self.sort_button.grid(
+            row=0, column=2,
+            padx=config.BUTTON_PADDING_X,
+            pady=config.BUTTON_PADDING_Y
+        )
 
     def _create_progress_section(self):
         """Create the progress bar and status label."""
@@ -222,9 +267,11 @@ class FileSelectorApp(_BaseWindow):
                 file_name = os.path.basename(file_path)
                 self.file_names.append(file_name)
                 self.file_paths.append(file_path)
-                self.file_listbox.insert(tk.END, file_name)
             else:
                 invalid_files.append((os.path.basename(file_path), error_msg))
+
+        # Refresh the listbox display
+        self._refresh_file_list()
 
         # Show warning if any files were invalid
         if invalid_files:
@@ -240,6 +287,77 @@ class FileSelectorApp(_BaseWindow):
         self.file_names.clear()
         self.file_paths.clear()
         self.file_listbox.delete(0, tk.END)
+
+    def _refresh_file_list(self):
+        """Refresh the listbox display with numbered entries."""
+        self.file_listbox.delete(0, tk.END)
+        for i, file_name in enumerate(self.file_names, 1):
+            self.file_listbox.insert(tk.END, f"{i}. {file_name}")
+
+    def move_file_up(self):
+        """Move the selected file up in the list."""
+        selection = self.file_listbox.curselection()
+        if not selection:
+            messagebox.showinfo("No Selection", "Please select a file to move up.")
+            return
+
+        index = selection[0]
+        if index == 0:
+            # Already at the top
+            return
+
+        # Swap with the item above
+        self.file_names[index], self.file_names[index - 1] = \
+            self.file_names[index - 1], self.file_names[index]
+        self.file_paths[index], self.file_paths[index - 1] = \
+            self.file_paths[index - 1], self.file_paths[index]
+
+        # Refresh display and maintain selection
+        self._refresh_file_list()
+        self.file_listbox.selection_set(index - 1)
+        self.file_listbox.see(index - 1)
+
+    def move_file_down(self):
+        """Move the selected file down in the list."""
+        selection = self.file_listbox.curselection()
+        if not selection:
+            messagebox.showinfo("No Selection", "Please select a file to move down.")
+            return
+
+        index = selection[0]
+        if index >= len(self.file_names) - 1:
+            # Already at the bottom
+            return
+
+        # Swap with the item below
+        self.file_names[index], self.file_names[index + 1] = \
+            self.file_names[index + 1], self.file_names[index]
+        self.file_paths[index], self.file_paths[index + 1] = \
+            self.file_paths[index + 1], self.file_paths[index]
+
+        # Refresh display and maintain selection
+        self._refresh_file_list()
+        self.file_listbox.selection_set(index + 1)
+        self.file_listbox.see(index + 1)
+
+    def sort_files(self):
+        """Sort files alphabetically by name."""
+        if not self.file_names:
+            return
+
+        # Create a list of tuples (name, path) for sorting
+        files_paired = list(zip(self.file_names, self.file_paths))
+
+        # Sort by filename (case-insensitive)
+        files_paired.sort(key=lambda x: x[0].lower())
+
+        # Unzip back into separate lists
+        self.file_names, self.file_paths = zip(*files_paired)
+        self.file_names = list(self.file_names)
+        self.file_paths = list(self.file_paths)
+
+        # Refresh display
+        self._refresh_file_list()
 
     def merge_files(self):
         """
@@ -361,6 +479,9 @@ class FileSelectorApp(_BaseWindow):
         state = "normal" if enabled else "disabled"
         self.select_button.configure(state=state)
         self.clear_button.configure(state=state)
+        self.move_up_button.configure(state=state)
+        self.move_down_button.configure(state=state)
+        self.sort_button.configure(state=state)
         self.merge_button.configure(state=state)
         self.close_button.configure(state=state)
 
@@ -484,13 +605,13 @@ class FileSelectorApp(_BaseWindow):
                 if file_path not in self.file_paths:
                     self.file_names.append(file_name)
                     self.file_paths.append(file_path)
-                    self.file_listbox.insert(tk.END, file_name)
                     valid_count += 1
             else:
                 invalid_files.append((os.path.basename(file_path), error_msg))
 
-        # Show status message
+        # Refresh the listbox display
         if valid_count > 0:
+            self._refresh_file_list()
             print(f"Added {valid_count} file(s) via drag-and-drop")
 
         # Show warning if any files were invalid
