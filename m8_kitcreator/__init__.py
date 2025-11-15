@@ -5,7 +5,7 @@ This package provides tools for concatenating WAV files with cue point markers
 that are compatible with the Dirtywave M8 hardware sampler.
 """
 
-__version__ = "0.26.0"
+__version__ = "0.27.0"
 __author__ = "Andy Tanguay"
 __license__ = "MIT"
 

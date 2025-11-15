@@ -44,6 +44,13 @@ To install, grab the last version that's out there. Getting things set up is not
 
 ## What's New
 
+**New in v0.27:** Progress bar and threading!
+- **Visual progress feedback** - Real-time progress bar shows processing status
+- **Responsive UI** - Background threading prevents UI freezing during processing
+- **Status updates** - Shows which file is being processed (e.g., "Processing file 3 of 10...")
+- **Better UX** - Buttons disabled during processing to prevent accidental clicks
+- **Error handling** - Graceful error recovery with user-friendly messages
+
 **New in v0.26:** Self-contained distribution!
 - **No Python installation required** - Standalone executables for macOS and Linux
 - **Bundled ffmpeg** - Uses `static-ffmpeg` package, no system ffmpeg needed
