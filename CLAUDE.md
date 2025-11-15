@@ -4,7 +4,7 @@
 
 **M8_KitCreator** (also known as M8_KitBasher) is a Python GUI application that creates sliced WAV audio kits compatible with the Dirtywave M8 hardware sampler. The tool takes multiple WAV files, concatenates them with markers (cue points), removes excess silence, and outputs a single WAV file that the M8 can use as a sliced instrument.
 
-**Current Version:** 0.22 (M8_KitBasher_0.22.py)
+**Current Version:** 0.26.0 (Self-contained distribution)
 **Language:** Python 3.x
 **Author:** Andy Tanguay
 **License:** MIT
@@ -15,9 +15,10 @@
 - Select multiple WAV files via GUI
 - Concatenate files with 1ms silent markers between each sample
 - Remove silence from audio (configurable threshold: -50dBFS, min 10ms)
-- Convert audio to mono (required for correct cue point positioning)
+- **Preserve stereo or mono** (v0.23+) - Correctly calculates cue points for any channel count
 - Insert WAV cue chunks at the start of each sample slice
 - Export single WAV file ready for M8 import
+- **Standalone executables** (v0.26+) - No Python or ffmpeg installation required
 
 ## Codebase Structure
 
@@ -25,28 +26,30 @@
 
 ```
 M8_KitCreator/
-├── M8_KitBasher_0.22.py          # LATEST - Current production version (181 lines)
-├── setup.py                      # py2app macOS bundling config
+├── M8_KitBasher.py               # MAIN ENTRY POINT - Run this file
+├── m8_kitcreator/                # Main package (modular architecture)
+│   ├── __init__.py              # Package initialization
+│   ├── config.py                # Configuration constants
+│   ├── utils.py                 # Utility functions (validation, helpers)
+│   ├── audio_processor.py       # Audio processing logic (uses static-ffmpeg!)
+│   ├── gui.py                   # GUI components (FileSelectorApp class)
+│   └── README.md                # Package documentation
+├── M8_KitCreator.spec            # PyInstaller build configuration
+├── build.sh                      # Build script for macOS/Linux
+├── requirements.txt              # Runtime dependencies
+├── requirements-build.txt        # Build dependencies
+├── BUILD.md                      # Complete build documentation
+├── setup.py                      # Legacy py2app config (deprecated)
 ├── README.md                     # User-facing documentation
 ├── CLAUDE.md                     # AI assistant guide (this file)
+├── TASKS.md                      # Improvement tasks and roadmap
+├── STEREO_FIX_ANALYSIS.md       # Technical analysis of stereo fix
 ├── LICENSE                       # MIT license
 ├── Records_01.png                # Documentation screenshot
 ├── versions/                     # ALL archived versions and prototypes
 │   ├── M8_KitBasher.py          # Original/legacy version
-│   ├── M8_KitBasher_0.01.py     # Initial version with sine wave markers
-│   ├── M8_KitBasher_0.07.py     # Historical version
-│   ├── M8_KitBasher_0.08.py     # Historical version
-│   ├── M8_KitBasher_0.09.py     # Historical version
-│   ├── M8_KitBasher_0.10.py     # Historical version
-│   ├── M8_KitBasher_0.11.py     # First cue point implementation
-│   ├── M8_KitBasher_0.12.py     # Historical version
-│   ├── M8_KitBasher_0.13.py     # Without mono (broken markers)
-│   ├── M8_KitBasher_0.14.py     # First version with mono fix
-│   ├── M8_KitBasher_0.20.py     # First customtkinter version
-│   ├── M8_KitBasher_0.21.py     # Previous version with error handling
-│   ├── InterfaceTest_01.py      # UI prototype experiment
-│   ├── InterfaceTest_02.py      # UI prototype experiment
-│   └── InterfaceTest_03.py      # UI prototype experiment
+│   ├── M8_KitBasher_0.01-0.24.py # Historical versions
+│   └── InterfaceTest_01-03.py   # UI prototype experiments
 └── images/                       # Documentation images
     ├── app_022.png              # Application screenshot
     └── OceanShot.png            # Output waveform example
@@ -54,56 +57,127 @@ M8_KitCreator/
 
 ### Key Files Reference
 
-- **Primary file:** `M8_KitBasher_0.22.py` - Always use this as the main reference (root directory)
-- **Setup file:** `setup.py` - For macOS app bundling (currently incomplete)
-- **Archives:** `versions/` folder contains ALL historical implementations and UI prototypes
+- **Primary file:** `M8_KitBasher.py` - Main entry point (root directory)
+- **Package:** `m8_kitcreator/` - Modular implementation
+  - `config.py` - All constants and configuration
+  - `utils.py` - Validation and helper functions
+  - `audio_processor.py` - AudioProcessor class (with static-ffmpeg support)
+  - `gui.py` - FileSelectorApp class for GUI
+- **Build files:**
+  - `M8_KitCreator.spec` - PyInstaller configuration for standalone builds
+  - `build.sh` - Automated build script (macOS/Linux)
+  - `requirements.txt` - Runtime dependencies (pydub, customtkinter, static-ffmpeg)
+  - `requirements-build.txt` - Build dependencies (adds pyinstaller)
+  - `BUILD.md` - Complete build and distribution guide
+- **Archives:** `versions/` folder contains ALL historical implementations (18 versions)
+- **Analysis docs:** `STEREO_FIX_ANALYSIS.md` explains the stereo cue point fix in detail
 
 ## Architecture
 
+### Modular Design (v0.25+)
+
+The codebase has been refactored into a modular architecture with clear separation of concerns:
+
+```
+m8_kitcreator/
+├── config.py           # All constants and configuration
+├── utils.py            # Validation and helper functions
+├── audio_processor.py  # Audio processing business logic
+└── gui.py              # User interface components
+```
+
 ### Main Components
 
-#### 1. FileSelectorApp Class (GUI)
-**Location:** M8_KitBasher_0.22.py:10-181
+#### 1. config.py - Configuration Module
+**Location:** m8_kitcreator/config.py
 
-Main application class inheriting from `tk.Tk`:
+Contains all configuration constants organized by category:
+- UI Configuration (window size, fonts, padding)
+- Audio Processing Configuration (defaults, validation limits)
+- File Handling Configuration (file types, extensions)
+- Application Messages (UI text, error messages)
+
+No code logic, only constants - making configuration easy to modify.
+
+#### 2. utils.py - Utility Module
+**Location:** m8_kitcreator/utils.py
+
+Helper functions used across the application:
+- `validate_wav_file()` - Comprehensive WAV file validation
+- `get_channel_description()` - Format channel count as human-readable
+- `format_file_list_error()` - Format error lists for display
+- `check_directory_writable()` - Verify write permissions
+
+Pure functions with no side effects - easy to test.
+
+#### 3. AudioProcessor Class (Business Logic)
+**Location:** m8_kitcreator/audio_processor.py
+
+Handles all audio processing operations:
+
+```python
+class AudioProcessor:
+    def __init__(self, marker_duration_ms=1, silence_thresh=-50.0,
+                 min_silence_len=10, retained_silence=1, force_mono=False):
+        # Initialize with processing parameters
+
+    def concatenate_audio_files(file_paths, output_file, progress_callback=None):
+        # Main processing method - returns True/False for success
+
+    def _process_silence(audio, retain_silence):
+        # Remove silence from audio
+
+    def _calculate_frame_position(audio):
+        # Calculate frame position for cue points
+
+    def _export_audio(audio, output_file, target_channels):
+        # Export audio to WAV file
+
+    def _add_cue_points(wav_file, cue_positions):
+        # Add cue chunk to WAV file
+
+    def _show_success_message(target_channels, cue_positions, num_files):
+        # Display success dialog
+```
+
+**Key Features:**
+- Can be used independently of GUI (perfect for CLI/automation)
+- Frame-based cue point calculation for stereo support
+- Configurable silence detection parameters
+- Optional progress callback support
+- Comprehensive error handling
+
+#### 4. FileSelectorApp Class (User Interface)
+**Location:** m8_kitcreator/gui.py
+
+Main application window:
 
 ```python
 class FileSelectorApp(tk.Tk):
     def __init__(self):
-        # Initialize UI with customtkinter widgets
-        # Manage two parallel lists: file_names and file_paths
+        # Initialize UI and AudioProcessor
 
-    def select_files(self):    # Open file dialog, update listbox
-    def clear_files(self):     # Clear selection
-    def merge_files(self):     # Process and export
+    def _setup_ui(self):
+        # Create all UI components
+
+    def _create_title_section(self):
+    def _create_button_section(self):
+    def _create_file_list_section(self):
+    def _create_bottom_buttons(self):
+
+    def select_files(self):    # File selection with validation
+    def clear_files(self):     # Clear file list
+    def merge_files(self):     # Process files using AudioProcessor
     def close_app(self):       # Exit application
 ```
 
-**State Management:**
-- `self.file_names` - List of display names (basenames only)
-- `self.file_paths` - List of full file paths for processing
+**Responsibilities:**
+- User interface layout and styling
+- File selection and validation
+- User interaction handling
+- Delegating processing to AudioProcessor
 
-#### 2. concatenate_audio_files() Function (Audio Processing)
-**Location:** M8_KitBasher_0.22.py:13-90
-
-Standalone function that handles all audio processing:
-
-```python
-def concatenate_audio_files(file_names, output_file,
-                           marker_duration_ms=1,
-                           silence_thresh=-50.0,
-                           min_silence_len=10,
-                           retained_silence=1):
-```
-
-**Processing Pipeline:**
-1. Create 1ms silent markers
-2. Load each WAV file
-3. **Convert to mono** (critical for correct cue positioning)
-4. Split on silence (remove quiet sections)
-5. Concatenate with markers
-6. Export WAV file
-7. Re-open and insert cue chunk with marker positions
+**Separation:** GUI code completely separated from business logic
 
 ### Technology Stack
 
@@ -165,8 +239,9 @@ listbox = tk.Listbox(frame, width=30, height=16)  # tkinter fallback
 
 **Principle:** Keep root directory clean, archive all old versions
 
-- **Latest version only in root:** `M8_KitBasher_0.22.py` (always run this)
-- **All archived versions in `versions/`:** Complete history from 0.01 to 0.21
+- **Latest version in root:** `M8_KitBasher.py` (main entry point - always run this)
+- **Package directory:** `m8_kitcreator/` contains all modular code
+- **All archived versions in `versions/`:** Complete history from 0.01 to 0.24
 - **UI prototypes archived:** `InterfaceTest_XX.py` files in `versions/` folder
 - **Original version archived:** `M8_KitBasher.py` (legacy) in `versions/` folder
 
