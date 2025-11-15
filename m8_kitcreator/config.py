@@ -11,7 +11,7 @@ Contains all configuration values for UI, audio processing, and file handling.
 # Window Configuration
 WINDOW_TITLE = "ConcateM8"
 WINDOW_WIDTH = 350
-WINDOW_HEIGHT = 570  # Increased for reorder buttons
+WINDOW_HEIGHT = 600  # Increased for reorder buttons and format selector
 WINDOW_GEOMETRY = f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}"
 
 # Font Configuration

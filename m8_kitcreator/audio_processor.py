@@ -13,6 +13,7 @@ from pydub.silence import split_on_silence
 
 from m8_kitcreator import config
 from m8_kitcreator.utils import get_channel_description
+from m8_kitcreator.octatrack_writer import OctatrackWriter
 
 # Configure pydub to use bundled ffmpeg if available
 try:
@@ -62,9 +63,10 @@ class AudioProcessor:
         self.retained_silence = retained_silence
         self.force_mono = force_mono
 
-    def concatenate_audio_files(self, file_paths, output_file, progress_callback=None):
+    def concatenate_audio_files(self, file_paths, output_file, progress_callback=None,
+                                output_format=None):
         """
-        Concatenate audio files with M8-compatible cue markers.
+        Concatenate audio files with M8-compatible cue markers and optional Octatrack .ot file.
 
         This method takes multiple WAV files and combines them into a single
         WAV file with cue point markers at the start of each sample. The cue
@@ -76,10 +78,14 @@ class AudioProcessor:
             output_file: Path for the output WAV file
             progress_callback: Optional callback function for progress updates
                              Called with (current_file_index, total_files)
+            output_format: Output format - M8, Octatrack, or Both (default: M8)
 
         Returns:
             bool: True if successful, False if an error occurred
         """
+        # Default to M8 format if not specified
+        if output_format is None:
+            output_format = config.OUTPUT_FORMAT_M8
         # Initialize processing state
         marker = None
         retain_silence = None
@@ -155,12 +161,18 @@ class AudioProcessor:
         if not self._export_audio(concatenated_audio, output_file, target_channels):
             return False
 
-        # Add cue points to WAV file
-        if not self._add_cue_points(output_file, cue_positions):
-            return False
+        # Add cue points to WAV file (for M8 and Both)
+        if output_format in [config.OUTPUT_FORMAT_M8, config.OUTPUT_FORMAT_BOTH]:
+            if not self._add_cue_points(output_file, cue_positions):
+                return False
+
+        # Generate Octatrack .ot file (for Octatrack and Both)
+        if output_format in [config.OUTPUT_FORMAT_OCTATRACK, config.OUTPUT_FORMAT_BOTH]:
+            if not self._generate_ot_file(output_file, concatenated_audio, cue_positions):
+                return False
 
         # Success!
-        self._show_success_message(target_channels, cue_positions, total_files)
+        self._show_success_message(target_channels, cue_positions, total_files, output_format)
         return True
 
     def _process_silence(self, audio, retain_silence):
@@ -279,7 +291,57 @@ class AudioProcessor:
             )
             return False
 
-    def _show_success_message(self, target_channels, cue_positions, num_files):
+    def _generate_ot_file(self, wav_file, audio, cue_positions):
+        """
+        Generate Octatrack .ot metadata file.
+
+        Args:
+            wav_file: Path to the WAV file (used to determine .ot filename)
+            audio: AudioSegment containing the audio data
+            cue_positions: List of frame positions for slices
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Create .ot filename by replacing .wav extension
+            ot_file = os.path.splitext(wav_file)[0] + '.ot'
+
+            # Get audio parameters
+            sample_rate = audio.frame_rate
+            total_samples = len(audio.get_array_of_samples()) // audio.channels
+
+            # Create OctatrackWriter
+            ot_writer = OctatrackWriter(
+                output_path=ot_file,
+                sample_rate=sample_rate,
+                total_samples=total_samples
+            )
+
+            # Add slices based on cue positions
+            # Each slice starts at the cue position and ends at the next cue position
+            # (or at the end of the file for the last slice)
+            for i in range(len(cue_positions) - 1):
+                start_point = cue_positions[i]
+                end_point = cue_positions[i + 1]
+                ot_writer.add_slice(start_point, end_point)
+
+            # Write the .ot file
+            if ot_writer.write():
+                print(f"Octatrack .ot file generated: {ot_file}")
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            print(f"Error generating .ot file: {e}")
+            messagebox.showerror(
+                "Octatrack File Error",
+                f"Audio exported but failed to generate .ot file:\n{str(e)}"
+            )
+            return False
+
+    def _show_success_message(self, target_channels, cue_positions, num_files, output_format=None):
         """
         Display success message to user.
 
@@ -287,14 +349,20 @@ class AudioProcessor:
             target_channels: Number of channels in output
             cue_positions: List of cue point positions
             num_files: Number of files merged
+            output_format: Output format (M8, Octatrack, or Both)
         """
-        channel_desc = get_channel_description(target_channels)
-        print(f"Output format: {channel_desc}, {len(cue_positions)} cue points")
+        # Default to M8 if not specified
+        if output_format is None:
+            output_format = config.OUTPUT_FORMAT_M8
 
-        messagebox.showinfo(
-            config.MSG_SUCCESS_TITLE,
-            f"Files have been merged successfully!\n\n"
-            f"Output: {channel_desc}\n"
-            f"Cue points: {len(cue_positions)}\n"
-            f"Files merged: {num_files}"
-        )
+        channel_desc = get_channel_description(target_channels)
+        print(f"Output format: {output_format}, {channel_desc}, {len(cue_positions)} cue points")
+
+        # Build success message
+        message = f"Files have been merged successfully!\n\n"
+        message += f"Format: {output_format}\n"
+        message += f"Output: {channel_desc}\n"
+        message += f"Cue points: {len(cue_positions)}\n"
+        message += f"Files merged: {num_files}"
+
+        messagebox.showinfo(config.MSG_SUCCESS_TITLE, message)

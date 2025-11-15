@@ -55,6 +55,9 @@ class FileSelectorApp(_BaseWindow):
         self.file_names = []
         self.file_paths = []
 
+        # Output format selection
+        self.output_format = tk.StringVar(value=config.DEFAULT_OUTPUT_FORMAT)
+
         # Audio processor
         self.processor = AudioProcessor()
 
@@ -71,6 +74,7 @@ class FileSelectorApp(_BaseWindow):
         self._create_button_section()
         self._create_file_list_section()
         self._create_reorder_section()
+        self._create_format_section()
         self._create_progress_section()
         self._create_bottom_buttons()
 
@@ -185,6 +189,32 @@ class FileSelectorApp(_BaseWindow):
             padx=config.BUTTON_PADDING_X,
             pady=config.BUTTON_PADDING_Y
         )
+
+    def _create_format_section(self):
+        """Create the output format selection dropdown."""
+        self.format_frame = ctk.CTkFrame(self)
+        self.format_frame.pack(
+            pady=config.FRAME_PADDING_Y,
+            padx=config.FRAME_PADDING_X
+        )
+
+        self.format_label = ctk.CTkLabel(
+            self.format_frame,
+            text="Output Format:",
+            font=config.LABEL_FONT
+        )
+        self.format_label.pack(side=tk.LEFT, padx=5)
+
+        self.format_dropdown = ctk.CTkOptionMenu(
+            self.format_frame,
+            variable=self.output_format,
+            values=[
+                config.OUTPUT_FORMAT_M8,
+                config.OUTPUT_FORMAT_OCTATRACK,
+                config.OUTPUT_FORMAT_BOTH
+            ]
+        )
+        self.format_dropdown.pack(side=tk.LEFT, padx=5)
 
     def _create_progress_section(self):
         """Create the progress bar and status label."""
@@ -418,7 +448,8 @@ class FileSelectorApp(_BaseWindow):
                 success = self.processor.concatenate_audio_files(
                     self.file_paths,
                     output_file,
-                    progress_callback=self._update_progress
+                    progress_callback=self._update_progress,
+                    output_format=self.output_format.get()
                 )
 
                 # Update UI after completion (in main thread)

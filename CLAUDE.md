@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-**M8_KitCreator** (also known as M8_KitBasher) is a Python GUI application that creates sliced WAV audio kits compatible with the Dirtywave M8 hardware sampler. The tool takes multiple WAV files, concatenates them with markers (cue points), removes excess silence, and outputs a single WAV file that the M8 can use as a sliced instrument.
+**M8_KitCreator** (also known as M8_KitBasher) is a Python GUI application that creates sliced WAV audio kits compatible with the Dirtywave M8 hardware sampler and Elektron Octatrack sampler. The tool takes multiple WAV files, concatenates them with markers, removes excess silence, and outputs files ready for your hardware sampler (WAV with cue points for M8, or WAV with .ot metadata for Octatrack).
 
-**Current Version:** 0.29.0 (File reordering)
+**Current Version:** 0.30.0 (Octatrack support)
 **Language:** Python 3.x
 **Author:** Andy Tanguay
 **License:** MIT
@@ -16,12 +16,14 @@
 - Concatenate files with 1ms silent markers between each sample
 - Remove silence from audio (configurable threshold: -50dBFS, min 10ms)
 - **Preserve stereo or mono** (v0.23+) - Correctly calculates cue points for any channel count
-- Insert WAV cue chunks at the start of each sample slice
-- Export single WAV file ready for M8 import
+- Insert WAV cue chunks at the start of each sample slice (M8)
+- Generate .ot metadata files for Octatrack slice playback (v0.30+)
+- Export single WAV file ready for M8 or Octatrack import
 - **Standalone executables** (v0.26+) - No Python or ffmpeg installation required
 - **Visual progress feedback** (v0.27+) - Real-time progress bar with threading for responsive UI
 - **Drag-and-drop support** (v0.28+) - Drag WAV files directly onto the window for easy file selection
 - **File reordering** (v0.29+) - Move files up/down, sort alphabetically, with numbered display
+- **Multi-format output** (v0.30+) - Choose M8, Octatrack, or both formats
 
 ## Codebase Structure
 
@@ -35,6 +37,7 @@ M8_KitCreator/
 │   ├── config.py                # Configuration constants
 │   ├── utils.py                 # Utility functions (validation, helpers)
 │   ├── audio_processor.py       # Audio processing logic (uses static-ffmpeg!)
+│   ├── octatrack_writer.py      # Octatrack .ot file generation
 │   ├── gui.py                   # GUI components (FileSelectorApp class)
 │   └── README.md                # Package documentation
 ├── M8_KitCreator.spec            # PyInstaller build configuration
@@ -86,6 +89,7 @@ m8_kitcreator/
 ├── config.py           # All constants and configuration
 ├── utils.py            # Validation and helper functions
 ├── audio_processor.py  # Audio processing business logic
+├── octatrack_writer.py # Octatrack .ot file generation
 └── gui.py              # User interface components
 ```
 

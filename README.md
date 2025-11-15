@@ -1,6 +1,6 @@
 # M8_KitCreator
 
-A modern, user-friendly tool for creating sliced audio kits compatible with the [Dirtywave M8](https://dirtywave.com/) hardware sampler. Simply select your WAV files, and M8_KitCreator will intelligently combine them into a single file with perfectly positioned cue markers that the M8 recognizes as individual slices.
+A modern, user-friendly tool for creating sliced audio kits compatible with the [Dirtywave M8](https://dirtywave.com/) hardware sampler and [Elektron Octatrack](https://www.elektron.se/products/octatrack-mkii/). Simply select your WAV files, choose your output format, and M8_KitCreator will intelligently combine them into a single file with perfectly positioned markers that your hardware recognizes as individual slices.
 
 ![M8 Kit Creator Interface](/images/app_022.png)
 
@@ -10,11 +10,13 @@ A modern, user-friendly tool for creating sliced audio kits compatible with the 
 - Drag & drop WAV files directly onto the window
 - Simple, clean interface with real-time progress feedback
 - No audio engineering knowledge required
+- Choose your output format: M8, Octatrack, or both!
 
 🎵 **Smart Audio Processing**
 - Automatic silence removal with configurable threshold (-50dBFS)
 - Preserves stereo or mono audio (your choice!)
 - Frame-accurate cue point positioning for perfect M8 compatibility
+- Octatrack .ot metadata file generation for slice playback
 - 1ms silent markers between samples for clean slicing
 
 ⚡ **Modern & Responsive**
@@ -28,6 +30,7 @@ A modern, user-friendly tool for creating sliced audio kits compatible with the 
 - Bundled ffmpeg - works out of the box
 - Cross-platform: macOS and Linux support
 - Modular codebase perfect for automation and scripting
+- Support for multiple hardware samplers (M8 and Octatrack)
 
 ## Installation
 
@@ -80,17 +83,22 @@ Want to create your own standalone executable? See [BUILD.md](BUILD.md) for comp
    - Click "Select Files" and choose your WAV files
    - Drag & drop WAV files directly onto the window
 
-3. **Click "Merge"** to combine them
+3. **Choose your output format** from the dropdown:
+   - **M8**: Creates WAV file with cue points for Dirtywave M8
+   - **Octatrack**: Creates WAV file with .ot metadata for Elektron Octatrack
+   - **Both (M8 + Octatrack)**: Creates both formats at once
 
-4. **Choose where to save** your M8-compatible kit
+4. **Click "Merge"** to combine them
 
-5. **Load the kit on your M8** and start making music! 🎶
+5. **Choose where to save** your kit
+
+6. **Load the kit on your hardware** and start making music! 🎶
 
 The app will automatically:
 - Remove excess silence from each sample
 - Add 1ms markers between samples
-- Insert cue points at the start of each slice
-- Create a single WAV file ready for the M8
+- Insert cue points (for M8) or generate .ot metadata (for Octatrack)
+- Create files ready for your hardware sampler
 
 ### Tips
 
@@ -100,6 +108,14 @@ The app will automatically:
 - Progress bar shows real-time processing status
 
 ## What's New
+
+**New in v0.30:** Elektron Octatrack support!
+- **Multi-format output** - Choose between M8, Octatrack, or both formats
+- **Octatrack .ot files** - Generates proper .ot metadata files for slice playback
+- **Format selector dropdown** - Easy selection of output format
+- **Dual export** - Create both M8 and Octatrack versions in one pass
+- **Based on reverse-engineered format** - Uses the community-documented .ot file specification
+- **832-byte binary format** - Proper tempo, trim, loop, and slice data for Octatrack
 
 **New in v0.29:** File reordering controls!
 - **Move Up/Down buttons** - Easily reorder files in your kit
@@ -156,9 +172,20 @@ The app will automatically:
 - **Retained Silence:** 1ms between chunks
 - **Cue Point Format:** WAV standard cue chunks with frame-based positioning
 
-### M8 Compatibility
+### Hardware Compatibility
 
+**M8 Compatibility:**
 The output WAV files are fully compatible with the Dirtywave M8's slice/kit functionality. The cue chunks follow the WAV standard and use frame-based positioning to ensure correct slice alignment regardless of channel configuration.
+
+**Octatrack Compatibility:**
+The .ot metadata files follow the reverse-engineered Elektron Octatrack format (832-byte binary specification). Each .ot file contains:
+- Tempo information (BPM)
+- Trim and loop lengths
+- Up to 64 slice positions with start/end/loop points
+- Gain, stretch, and quantization settings
+- 16-bit checksum for validation
+
+The .ot file is generated alongside the WAV file and should be placed in the same directory on your Octatrack's CF card.
 
 ### Output Example
 
@@ -177,6 +204,7 @@ M8_KitCreator/
 │   ├── config.py           # Configuration constants
 │   ├── utils.py            # Validation and helper functions
 │   ├── audio_processor.py  # Audio processing logic
+│   ├── octatrack_writer.py # Octatrack .ot file generation
 │   └── gui.py              # User interface
 ├── requirements.txt         # Python dependencies
 ├── BUILD.md                # Build instructions
@@ -199,6 +227,7 @@ The codebase uses a modular architecture with clear separation of concerns:
 - `config.py` - All constants and configuration
 - `utils.py` - Pure helper functions (easy to test)
 - `audio_processor.py` - Audio processing business logic (framework-agnostic)
+- `octatrack_writer.py` - Octatrack .ot file generation (independent module)
 - `gui.py` - User interface (can be swapped with CLI or web interface)
 
 See [CLAUDE.md](CLAUDE.md) for comprehensive development documentation.
@@ -217,11 +246,12 @@ Copyright © 2023-2025 Andy Tanguay
 
 ## Acknowledgments
 
-- Built for the amazing [Dirtywave M8](https://dirtywave.com/) community
+- Built for the amazing [Dirtywave M8](https://dirtywave.com/) and [Elektron Octatrack](https://www.elektron.se/) communities
 - Uses [pydub](https://github.com/jiaaro/pydub) for audio processing
 - UI powered by [customtkinter](https://github.com/TomSchimansky/CustomTkinter)
 - Drag-and-drop via [tkinterdnd2](https://github.com/pmgagne/tkinterdnd2)
+- Octatrack .ot format based on reverse-engineering work by [OctaChainer](https://github.com/KaiDrange/OctaChainer) and the Elektronauts community
 
 ---
 
-**Made with ❤️ for M8 music makers**
+**Made with ❤️ for M8 and Octatrack music makers**
