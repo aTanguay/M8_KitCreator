@@ -10,7 +10,7 @@ pydub</b>
 
 Install them with <i>"pip (or pip3 if that doesn't work) install pydub customtkinter"</i>
 
-Run the newest M8_KitBasher_0.24.py file.
+Run the M8_KitBasher.py file.
 
 To use: You select your files, and the script puts them into one file, with markers (slices) at the start of each sample. It also throws out extra silence.
 
@@ -19,6 +19,14 @@ To use: You select your files, and the script puts them into one file, with mark
 To install, grab the last version that's out there. Getting things set up is not my strong suit, but I'll try and add more install tips, as well as try and get it packed up into a Mac app. I got close, but not quite yet.
 
 This is a python script with a couple dependencies, but nothing weird.
+
+**New in v0.25:** Modular architecture!
+- Complete code refactoring into separate modules
+- Clean separation of concerns: config, utils, audio processing, and GUI
+- AudioProcessor can now be used without GUI (perfect for automation/CLI)
+- Easier to test, maintain, and extend
+- New package structure: `m8_kitcreator/` with dedicated modules
+- Simple main entry point: `M8_KitBasher.py`
 
 **New in v0.24:** Code quality improvements and validation!
 - Input validation: Files are checked before processing to ensure they're valid WAV files
