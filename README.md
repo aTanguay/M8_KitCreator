@@ -25,6 +25,7 @@ If you want to run from source or contribute:
    This installs:
    - `pydub` - Audio processing
    - `customtkinter` - Modern UI
+   - `tkinterdnd2` - Drag-and-drop support
    - `static-ffmpeg` - Bundled ffmpeg (no system install needed!)
 
 3. **Run the application:**
@@ -43,6 +44,13 @@ To use: You select your files, and the script puts them into one file, with mark
 To install, grab the last version that's out there. Getting things set up is not my strong suit, but I'll try and add more install tips, as well as try and get it packed up into a Mac app. I got close, but not quite yet.
 
 ## What's New
+
+**New in v0.28:** Drag-and-drop file support!
+- **Drag & drop files** - Simply drag WAV files directly onto the window
+- **Visual feedback** - Listbox highlights in green when dragging files over
+- **Smart validation** - Only accepts valid WAV files, shows errors for invalid files
+- **Duplicate prevention** - Won't add the same file twice
+- **Seamless integration** - Works alongside the "Select Files" button
 
 **New in v0.27:** Progress bar and threading!
 - **Visual progress feedback** - Real-time progress bar shows processing status

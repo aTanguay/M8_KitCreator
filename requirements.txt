@@ -6,6 +6,7 @@ pydub>=0.25.1
 
 # GUI
 customtkinter>=5.0.0
+tkinterdnd2>=0.3.0
 
 # Bundled ffmpeg (optional but recommended)
 # This allows the app to work without system ffmpeg

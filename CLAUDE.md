@@ -4,7 +4,7 @@
 
 **M8_KitCreator** (also known as M8_KitBasher) is a Python GUI application that creates sliced WAV audio kits compatible with the Dirtywave M8 hardware sampler. The tool takes multiple WAV files, concatenates them with markers (cue points), removes excess silence, and outputs a single WAV file that the M8 can use as a sliced instrument.
 
-**Current Version:** 0.27.0 (Progress bar and threading)
+**Current Version:** 0.28.0 (Drag-and-drop support)
 **Language:** Python 3.x
 **Author:** Andy Tanguay
 **License:** MIT
@@ -20,6 +20,7 @@
 - Export single WAV file ready for M8 import
 - **Standalone executables** (v0.26+) - No Python or ffmpeg installation required
 - **Visual progress feedback** (v0.27+) - Real-time progress bar with threading for responsive UI
+- **Drag-and-drop support** (v0.28+) - Drag WAV files directly onto the window for easy file selection
 
 ## Codebase Structure
 
