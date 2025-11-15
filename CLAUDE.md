@@ -26,20 +26,27 @@
 ```
 M8_KitCreator/
 ├── M8_KitBasher_0.22.py          # LATEST - Current production version (181 lines)
-├── M8_KitBasher_0.21.py          # Previous version with error handling
-├── M8_KitBasher_0.20.py          # First customtkinter version
-├── M8_KitBasher_0.14.py          # First version with mono fix
-├── M8_KitBasher_0.13.py          # Without mono (broken markers)
-├── M8_KitBasher.py               # Original/legacy version
-├── InterfaceTest_01.py           # UI prototype experiments
-├── InterfaceTest_02.py           # UI prototype experiments
-├── InterfaceTest_03.py           # UI prototype experiments
 ├── setup.py                      # py2app macOS bundling config
 ├── README.md                     # User-facing documentation
+├── CLAUDE.md                     # AI assistant guide (this file)
 ├── LICENSE                       # MIT license
 ├── Records_01.png                # Documentation screenshot
-├── versions/                     # Archived older versions (0.01-0.12)
-│   └── M8_KitBasher_0.XX.py     # Historical versions
+├── versions/                     # ALL archived versions and prototypes
+│   ├── M8_KitBasher.py          # Original/legacy version
+│   ├── M8_KitBasher_0.01.py     # Initial version with sine wave markers
+│   ├── M8_KitBasher_0.07.py     # Historical version
+│   ├── M8_KitBasher_0.08.py     # Historical version
+│   ├── M8_KitBasher_0.09.py     # Historical version
+│   ├── M8_KitBasher_0.10.py     # Historical version
+│   ├── M8_KitBasher_0.11.py     # First cue point implementation
+│   ├── M8_KitBasher_0.12.py     # Historical version
+│   ├── M8_KitBasher_0.13.py     # Without mono (broken markers)
+│   ├── M8_KitBasher_0.14.py     # First version with mono fix
+│   ├── M8_KitBasher_0.20.py     # First customtkinter version
+│   ├── M8_KitBasher_0.21.py     # Previous version with error handling
+│   ├── InterfaceTest_01.py      # UI prototype experiment
+│   ├── InterfaceTest_02.py      # UI prototype experiment
+│   └── InterfaceTest_03.py      # UI prototype experiment
 └── images/                       # Documentation images
     ├── app_022.png              # Application screenshot
     └── OceanShot.png            # Output waveform example
@@ -47,9 +54,9 @@ M8_KitCreator/
 
 ### Key Files Reference
 
-- **Primary file:** `M8_KitBasher_0.22.py` - Always use this as the main reference
+- **Primary file:** `M8_KitBasher_0.22.py` - Always use this as the main reference (root directory)
 - **Setup file:** `setup.py` - For macOS app bundling (currently incomplete)
-- **Archives:** `versions/` folder contains historical implementations
+- **Archives:** `versions/` folder contains ALL historical implementations and UI prototypes
 
 ## Architecture
 
@@ -156,12 +163,19 @@ listbox = tk.Listbox(frame, width=30, height=16)  # tkinter fallback
 
 ### File Organization
 
-**Principle:** Keep all working versions accessible
+**Principle:** Keep root directory clean, archive all old versions
 
-- Latest version: `M8_KitBasher_0.22.py` (always run this)
-- Recent versions: Root directory (0.13-0.22)
-- Old versions: `versions/` subdirectory (0.01-0.12)
-- UI experiments: `InterfaceTest_XX.py` files (parallel development)
+- **Latest version only in root:** `M8_KitBasher_0.22.py` (always run this)
+- **All archived versions in `versions/`:** Complete history from 0.01 to 0.21
+- **UI prototypes archived:** `InterfaceTest_XX.py` files in `versions/` folder
+- **Original version archived:** `M8_KitBasher.py` (legacy) in `versions/` folder
+
+**New file versioning workflow:**
+1. When creating a new version (e.g., 0.23), copy current latest to new filename
+2. Make changes in new file
+3. Test thoroughly
+4. Move old latest (0.22) to `versions/` folder
+5. New version becomes the only .py file in root
 
 ### Error Handling Pattern
 
@@ -313,13 +327,15 @@ python M8_KitBasher_0.22.py
 2. Make changes in new file
 3. Test thoroughly
 4. Update README.md with new version number
-5. Optionally archive old versions to `versions/` folder
+5. **Archive old version:** `git mv M8_KitBasher_0.22.py versions/`
 6. Commit changes:
    ```bash
-   git add M8_KitBasher_0.23.py README.md
+   git add M8_KitBasher_0.23.py README.md versions/M8_KitBasher_0.22.py
    git commit -m "Version 0.23: [description of changes]"
    git push -u origin [branch-name]
    ```
+
+**Important:** Always move the previous version to `versions/` folder to keep root directory clean. Only the latest version should remain in root.
 
 ### Testing Changes
 
@@ -548,6 +564,6 @@ open dist/M8_KitBasher_0.22.app
 
 ---
 
-**Last Updated:** 2025-11-15 (Claude.ai analysis)
+**Last Updated:** 2025-11-15 (Repository reorganization - all old versions archived)
 **Analyzed Version:** M8_KitBasher_0.22.py
-**Document Version:** 1.0
+**Document Version:** 1.1
