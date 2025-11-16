@@ -53,14 +53,34 @@ build() {
 
     # Check Python version
     print_info "Checking Python version..."
+    if ! command_exists python3; then
+        print_error "Python 3 not found! Please install Python 3.7 or later."
+        exit 1
+    fi
     PYTHON_VERSION=$(python3 --version 2>&1 | awk '{print $2}')
-    print_info "Python version: $PYTHON_VERSION"
+    PYTHON_MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
+    PYTHON_MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
+
+    if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 7 ]); then
+        print_error "Python 3.7 or later required. Found: $PYTHON_VERSION"
+        exit 1
+    fi
+    print_info "Python version: $PYTHON_VERSION ✓"
 
     # Check if PyInstaller is installed
     if ! command_exists pyinstaller; then
         print_error "PyInstaller not found!"
         print_info "Installing build requirements..."
-        pip3 install -r requirements-build.txt
+        python3 -m pip install -r requirements-build.txt
+    fi
+
+    # Verify package version
+    print_info "Verifying package version..."
+    PACKAGE_VERSION=$(python3 -c "import m8_kitcreator; print(m8_kitcreator.__version__)" 2>/dev/null || echo "unknown")
+    if [ "$PACKAGE_VERSION" != "unknown" ]; then
+        print_info "Package version: $PACKAGE_VERSION"
+    else
+        print_warn "Could not verify package version (package may not be installed)"
     fi
 
     # Clean previous builds
@@ -89,8 +109,13 @@ build() {
     # Check if build succeeded
     if [[ "$OSTYPE" == "darwin"* ]]; then
         if [ -d "dist/M8_KitCreator.app" ]; then
-            print_info "Build successful!"
+            print_info "Build successful! ✓"
             print_info "Application: dist/M8_KitCreator.app"
+
+            # Show build size
+            BUILD_SIZE=$(du -sh dist/M8_KitCreator.app 2>/dev/null | awk '{print $1}')
+            print_info "Build size: $BUILD_SIZE"
+
             echo
             print_info "To run:"
             echo "  open dist/M8_KitCreator.app"
@@ -106,11 +131,17 @@ build() {
         fi
     else
         if [ -f "dist/M8_KitCreator" ]; then
-            print_info "Build successful!"
-            print_info "Executable: dist/M8_KitCreator"
-            echo
             # Make executable
             chmod +x dist/M8_KitCreator
+
+            print_info "Build successful! ✓"
+            print_info "Executable: dist/M8_KitCreator"
+
+            # Show build size
+            BUILD_SIZE=$(du -sh dist/M8_KitCreator 2>/dev/null | awk '{print $1}')
+            print_info "Build size: $BUILD_SIZE"
+
+            echo
             print_info "To run:"
             echo "  ./dist/M8_KitCreator"
             echo
@@ -123,8 +154,56 @@ build() {
     fi
 
     echo
-    print_info "Build artifacts in: dist/"
+    print_info "Build artifacts:"
     du -sh dist/* 2>/dev/null || true
+}
+
+# Test the built application
+test_build() {
+    print_info "Testing built application..."
+    echo
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        if [ ! -d "dist/M8_KitCreator.app" ]; then
+            print_error "Application not found! Build first with: ./build.sh build"
+            exit 1
+        fi
+
+        print_info "Verifying app bundle structure..."
+        if [ ! -f "dist/M8_KitCreator.app/Contents/MacOS/M8_KitCreator" ]; then
+            print_error "Invalid app bundle structure!"
+            exit 1
+        fi
+
+        print_info "Checking for code signature..."
+        codesign -dv dist/M8_KitCreator.app 2>&1 | grep -q "Signature" && \
+            print_info "App is code signed ✓" || \
+            print_warn "App is not code signed (expected for local builds)"
+
+        print_info "macOS app bundle structure is valid ✓"
+
+    else
+        if [ ! -f "dist/M8_KitCreator" ]; then
+            print_error "Executable not found! Build first with: ./build.sh build"
+            exit 1
+        fi
+
+        print_info "Checking executable permissions..."
+        if [ -x "dist/M8_KitCreator" ]; then
+            print_info "Executable permissions set ✓"
+        else
+            print_warn "Executable permissions not set"
+            chmod +x dist/M8_KitCreator
+        fi
+
+        print_info "Checking dependencies..."
+        ldd dist/M8_KitCreator 2>/dev/null | grep "not found" && \
+            print_warn "Missing system libraries detected" || \
+            print_info "All dependencies found ✓"
+    fi
+
+    echo
+    print_info "Build test passed! ✓"
 }
 
 # Main script
@@ -139,13 +218,17 @@ case "${1:-build}" in
         clean
         build
         ;;
+    test)
+        test_build
+        ;;
     *)
-        echo "Usage: $0 {build|clean|rebuild}"
+        echo "Usage: $0 {build|clean|rebuild|test}"
         echo
         echo "Commands:"
         echo "  build    - Build the application (default)"
         echo "  clean    - Clean build artifacts"
         echo "  rebuild  - Clean and build"
+        echo "  test     - Test the built application"
         exit 1
         ;;
 esac

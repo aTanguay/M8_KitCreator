@@ -661,7 +661,8 @@ class FileSelectorApp(_BaseWindow):
         Parse file paths from drag-and-drop event data.
 
         tkinterdnd2 returns paths in various formats depending on the platform.
-        This method handles the parsing correctly.
+        On macOS, it typically returns: {/path/to/file.wav} {/path/to/other.wav}
+        Each path is wrapped in curly braces to handle spaces in filenames.
 
         Args:
             data: Raw data from drop event
@@ -675,37 +676,27 @@ class FileSelectorApp(_BaseWindow):
         if isinstance(data, (list, tuple)):
             files = list(data)
         else:
-            # String format: either space-separated or with curly braces
+            # String format: paths wrapped in curly braces
             data = str(data)
 
-            # Remove outer curly braces if present
-            if data.startswith('{') and data.endswith('}'):
-                data = data[1:-1]
-
-            # Split by spaces, but respect curly braces for paths with spaces
+            # Parse by extracting content between curly braces
             current = []
             in_braces = False
 
             for char in data:
                 if char == '{':
                     in_braces = True
+                    current = []  # Start new path
                 elif char == '}':
                     in_braces = False
                     if current:
                         files.append(''.join(current))
                         current = []
-                elif char == ' ' and not in_braces:
-                    if current:
-                        files.append(''.join(current))
-                        current = []
-                else:
+                elif in_braces:
                     current.append(char)
+                # Ignore characters outside braces (spaces between paths)
 
-            # Add last file if any
-            if current:
-                files.append(''.join(current))
-
-        # Clean up paths
+        # Clean up paths (remove leading/trailing whitespace)
         files = [f.strip() for f in files if f.strip()]
 
         return files

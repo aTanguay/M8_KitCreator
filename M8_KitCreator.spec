@@ -25,9 +25,12 @@ datas = collect_data_files('customtkinter')
 
 # Collect tkinterdnd2 data files (platform-specific DLLs)
 try:
-    datas += collect_data_files('tkinterdnd2')
-except:
-    pass  # tkinterdnd2 may not be installed during build
+    import tkinterdnd2
+    tkdnd_path = os.path.dirname(tkinterdnd2.__file__)
+    datas += [(os.path.join(tkdnd_path, 'tkdnd'), 'tkinterdnd2/tkdnd')]
+except ImportError:
+    print("Warning: tkinterdnd2 not found - drag-and-drop will not work")
+    pass
 
 # Collect all submodules
 hiddenimports = [
@@ -42,7 +45,16 @@ hiddenimports = [
     'm8_kitcreator.audio_processor',
     'm8_kitcreator.octatrack_writer',
     'm8_kitcreator.gui',
+    # Python 3.12+ compatibility - distutils was removed, now part of setuptools
+    'setuptools',
 ]
+
+# Collect ALL distutils submodules (Python 3.12+ compatibility)
+try:
+    distutils_modules = collect_submodules('distutils')
+    hiddenimports.extend(distutils_modules)
+except:
+    pass
 
 # Try to include static-ffmpeg if available
 try:
@@ -59,14 +71,13 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=['hook-distutils.py'],
     excludes=[
         'matplotlib',
         'numpy',
         'scipy',
         'pandas',
         'pytest',
-        'setuptools',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -111,8 +122,8 @@ if sys.platform == 'darwin':
             'NSPrincipalClass': 'NSApplication',
             'NSHighResolutionCapable': 'True',
             'LSBackgroundOnly': 'False',
-            'CFBundleShortVersionString': '0.30.0',
-            'CFBundleVersion': '0.30.0',
+            'CFBundleShortVersionString': '0.31.0',
+            'CFBundleVersion': '0.31.0',
             'NSHumanReadableCopyright': 'Copyright © 2023-2025 Andy Tanguay. MIT License.',
         },
     )

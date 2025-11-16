@@ -109,6 +109,14 @@ The app will automatically:
 
 ## What's New
 
+**New in v0.31:** Production-ready standalone builds!
+- **Fixed drag-and-drop** - Proper handling of filenames with spaces
+- **Python 3.12 compatibility** - Works with latest Python version via distutils runtime hook
+- **Optimized window size** - Increased to 680px height for better button visibility
+- **Enhanced build script** - Comprehensive version checking and testing
+- **Bundled dependencies** - All required libraries (tkinterdnd2, static-ffmpeg) properly included
+- **Clean codebase** - Removed debug code for production release
+
 **New in v0.30:** Elektron Octatrack support!
 - **Multi-format output** - Choose between M8, Octatrack, or both formats
 - **Octatrack .ot files** - Generates proper .ot metadata files for slice playback
