@@ -1,17 +1,17 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller spec file for M8 Kit Creator
+PyInstaller spec file for KitBasher
 
 This spec file configures PyInstaller to create a standalone executable
-for M8 Kit Creator that works on macOS and Linux without requiring
+for KitBasher that works on macOS and Linux without requiring
 Python or dependencies to be installed.
 
 Usage:
     pyinstaller M8_KitCreator.spec
 
 Output:
-    dist/M8_KitCreator       (Linux executable)
-    dist/M8_KitCreator.app   (macOS application bundle)
+    dist/KitBasher       (Linux executable)
+    dist/KitBasher.app   (macOS application bundle)
 """
 
 import sys
@@ -95,7 +95,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='M8_KitCreator',
+    name='KitBasher',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -115,15 +115,15 @@ exe = EXE(
 if sys.platform == 'darwin':
     app = BUNDLE(
         exe,
-        name='M8_KitCreator.app',
+        name='KitBasher.app',
         icon=None,  # TODO: Add icon.icns
-        bundle_identifier='com.andytanguay.m8kitcreator',
+        bundle_identifier='com.andytanguay.kitbasher',
         info_plist={
             'NSPrincipalClass': 'NSApplication',
             'NSHighResolutionCapable': 'True',
             'LSBackgroundOnly': 'False',
-            'CFBundleShortVersionString': '0.31.0',
-            'CFBundleVersion': '0.31.0',
+            'CFBundleShortVersionString': '0.32.0',
+            'CFBundleVersion': '0.32.0',
             'NSHumanReadableCopyright': 'Copyright © 2023-2025 Andy Tanguay. MIT License.',
         },
     )

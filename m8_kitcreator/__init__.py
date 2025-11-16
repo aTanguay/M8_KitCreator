@@ -1,11 +1,11 @@
 """
-M8 Kit Creator - A tool for creating M8 and Octatrack compatible sliced audio kits.
+KitBasher - A tool for creating M8 and Octatrack compatible sliced audio kits.
 
 This package provides tools for concatenating WAV files with cue point markers
 for the Dirtywave M8 hardware sampler and .ot metadata files for the Elektron Octatrack.
 """
 
-__version__ = "0.31.0"
+__version__ = "0.32.0"
 __author__ = "Andy Tanguay"
 __license__ = "MIT"
 

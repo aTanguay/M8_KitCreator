@@ -82,7 +82,7 @@ class FileSelectorApp(_BaseWindow):
         """Create the title and subtitle labels."""
         self.main_title_label = ctk.CTkLabel(
             self,
-            text="Dirtywave M8 Sliced Wav Kit Maker",
+            text="Sliced Wav Kit Maker",
             font=config.TITLE_FONT
         )
         self.main_title_label.pack(pady=2, padx=1)

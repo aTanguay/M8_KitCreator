@@ -9,8 +9,8 @@ Contains all configuration values for UI, audio processing, and file handling.
 # ============================================================================
 
 # Window Configuration
-WINDOW_TITLE = "ConcateM8"
-WINDOW_WIDTH = 350
+WINDOW_TITLE = "KitBasher"
+WINDOW_WIDTH = 450  # Increased to prevent text cutoff
 WINDOW_HEIGHT = 680  # Increased to show Merge and Exit buttons properly
 WINDOW_GEOMETRY = f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}"
 

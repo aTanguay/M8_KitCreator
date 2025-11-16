@@ -1,8 +1,8 @@
-# M8_KitCreator
+# KitBasher
 
-A modern, user-friendly tool for creating sliced audio kits compatible with the [Dirtywave M8](https://dirtywave.com/) hardware sampler and [Elektron Octatrack](https://www.elektron.se/products/octatrack-mkii/). Simply select your WAV files, choose your output format, and M8_KitCreator will intelligently combine them into a single file with perfectly positioned markers that your hardware recognizes as individual slices.
+A modern, user-friendly tool for creating sliced audio kits compatible with the [Dirtywave M8](https://dirtywave.com/) hardware sampler and [Elektron Octatrack](https://www.elektron.se/products/octatrack-mkii/). Simply select your WAV files, choose your output format, and KitBasher will intelligently combine them into a single file with perfectly positioned markers that your hardware recognizes as individual slices.
 
-![M8 Kit Creator Interface](/images/app_022.png)
+![KitBasher Interface](/images/app_022.png)
 
 ## Features
 
@@ -36,10 +36,9 @@ A modern, user-friendly tool for creating sliced audio kits compatible with the 
 
 ### Option 1: Download Standalone App (Recommended)
 
-**Coming Soon:** Download ready-to-run executables from [Releases](../../releases):
+Download ready-to-run executables from [Releases](../../releases):
 
-- **macOS**: `M8_KitCreator.dmg` - Just drag and drop to Applications!
-- **Linux**: `M8_KitCreator-linux-x86_64.tar.gz` - Extract and run!
+- **macOS**: `KitBasher-macOS.zip` - Just unzip and drag to Applications!
 
 No Python, no pip, no dependencies needed - just download and run!
 
@@ -108,6 +107,12 @@ The app will automatically:
 - Progress bar shows real-time processing status
 
 ## What's New
+
+**New in v0.32:** Rebranded as KitBasher!
+- **New name: KitBasher** - Better reflects multi-hardware support (M8 + Octatrack)
+- **Updated UI title** - Now says "Sliced Wav Kit Maker" instead of "Dirtywave M8..."
+- **Wider window** - Increased to 450px width to prevent instruction text cutoff
+- **Improved readability** - All UI text now displays properly without truncation
 
 **New in v0.31:** Production-ready standalone builds!
 - **Fixed drag-and-drop** - Proper handling of filenames with spaces
@@ -255,6 +260,7 @@ Copyright © 2023-2025 Andy Tanguay
 ## Acknowledgments
 
 - Built for the amazing [Dirtywave M8](https://dirtywave.com/) and [Elektron Octatrack](https://www.elektron.se/) communities
+- Special thanks to the reverse-engineering work that made Octatrack support possible
 - Uses [pydub](https://github.com/jiaaro/pydub) for audio processing
 - UI powered by [customtkinter](https://github.com/TomSchimansky/CustomTkinter)
 - Drag-and-drop via [tkinterdnd2](https://github.com/pmgagne/tkinterdnd2)

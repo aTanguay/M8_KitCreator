@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Build script for M8 Kit Creator
+# Build script for KitBasher
 # Creates a standalone executable for the current platform
 #
 # Usage:
@@ -48,7 +48,7 @@ command_exists() {
 
 # Build the application
 build() {
-    print_info "Starting M8 Kit Creator build..."
+    print_info "Starting KitBasher build..."
     echo
 
     # Check Python version
@@ -108,45 +108,45 @@ build() {
 
     # Check if build succeeded
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        if [ -d "dist/M8_KitCreator.app" ]; then
+        if [ -d "dist/KitBasher.app" ]; then
             print_info "Build successful! ✓"
-            print_info "Application: dist/M8_KitCreator.app"
+            print_info "Application: dist/KitBasher.app"
 
             # Show build size
-            BUILD_SIZE=$(du -sh dist/M8_KitCreator.app 2>/dev/null | awk '{print $1}')
+            BUILD_SIZE=$(du -sh dist/KitBasher.app 2>/dev/null | awk '{print $1}')
             print_info "Build size: $BUILD_SIZE"
 
             echo
             print_info "To run:"
-            echo "  open dist/M8_KitCreator.app"
+            echo "  open dist/KitBasher.app"
             echo
             print_info "To create DMG (requires create-dmg):"
-            echo "  create-dmg --volname 'M8 Kit Creator' \\"
+            echo "  create-dmg --volname 'KitBasher' \\"
             echo "    --window-pos 200 120 --window-size 800 400 \\"
             echo "    --icon-size 100 --app-drop-link 600 185 \\"
-            echo "    dist/M8_KitCreator.dmg dist/M8_KitCreator.app"
+            echo "    dist/KitBasher.dmg dist/KitBasher.app"
         else
             print_error "Build failed! Application not found."
             exit 1
         fi
     else
-        if [ -f "dist/M8_KitCreator" ]; then
+        if [ -f "dist/KitBasher" ]; then
             # Make executable
-            chmod +x dist/M8_KitCreator
+            chmod +x dist/KitBasher
 
             print_info "Build successful! ✓"
-            print_info "Executable: dist/M8_KitCreator"
+            print_info "Executable: dist/KitBasher"
 
             # Show build size
-            BUILD_SIZE=$(du -sh dist/M8_KitCreator 2>/dev/null | awk '{print $1}')
+            BUILD_SIZE=$(du -sh dist/KitBasher 2>/dev/null | awk '{print $1}')
             print_info "Build size: $BUILD_SIZE"
 
             echo
             print_info "To run:"
-            echo "  ./dist/M8_KitCreator"
+            echo "  ./dist/KitBasher"
             echo
             print_info "To create portable archive:"
-            echo "  cd dist && tar -czf M8_KitCreator-linux-$(uname -m).tar.gz M8_KitCreator"
+            echo "  cd dist && tar -czf KitBasher-linux-$(uname -m).tar.gz KitBasher"
         else
             print_error "Build failed! Executable not found."
             exit 1
@@ -164,40 +164,40 @@ test_build() {
     echo
 
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        if [ ! -d "dist/M8_KitCreator.app" ]; then
+        if [ ! -d "dist/KitBasher.app" ]; then
             print_error "Application not found! Build first with: ./build.sh build"
             exit 1
         fi
 
         print_info "Verifying app bundle structure..."
-        if [ ! -f "dist/M8_KitCreator.app/Contents/MacOS/M8_KitCreator" ]; then
+        if [ ! -f "dist/KitBasher.app/Contents/MacOS/KitBasher" ]; then
             print_error "Invalid app bundle structure!"
             exit 1
         fi
 
         print_info "Checking for code signature..."
-        codesign -dv dist/M8_KitCreator.app 2>&1 | grep -q "Signature" && \
+        codesign -dv dist/KitBasher.app 2>&1 | grep -q "Signature" && \
             print_info "App is code signed ✓" || \
             print_warn "App is not code signed (expected for local builds)"
 
         print_info "macOS app bundle structure is valid ✓"
 
     else
-        if [ ! -f "dist/M8_KitCreator" ]; then
+        if [ ! -f "dist/KitBasher" ]; then
             print_error "Executable not found! Build first with: ./build.sh build"
             exit 1
         fi
 
         print_info "Checking executable permissions..."
-        if [ -x "dist/M8_KitCreator" ]; then
+        if [ -x "dist/KitBasher" ]; then
             print_info "Executable permissions set ✓"
         else
             print_warn "Executable permissions not set"
-            chmod +x dist/M8_KitCreator
+            chmod +x dist/KitBasher
         fi
 
         print_info "Checking dependencies..."
-        ldd dist/M8_KitCreator 2>/dev/null | grep "not found" && \
+        ldd dist/KitBasher 2>/dev/null | grep "not found" && \
             print_warn "Missing system libraries detected" || \
             print_info "All dependencies found ✓"
     fi
