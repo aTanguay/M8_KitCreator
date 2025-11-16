@@ -11,7 +11,7 @@ Contains all configuration values for UI, audio processing, and file handling.
 # Window Configuration
 WINDOW_TITLE = "ConcateM8"
 WINDOW_WIDTH = 350
-WINDOW_HEIGHT = 570  # Increased for reorder buttons
+WINDOW_HEIGHT = 600  # Increased for reorder buttons and format selector
 WINDOW_GEOMETRY = f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}"
 
 # Font Configuration
@@ -43,6 +43,12 @@ DEFAULT_MARKER_DURATION_MS = 1
 DEFAULT_SILENCE_THRESHOLD = -50.0
 DEFAULT_MIN_SILENCE_LEN = 10
 DEFAULT_RETAINED_SILENCE = 1
+
+# Output Format Options
+OUTPUT_FORMAT_M8 = "M8"
+OUTPUT_FORMAT_OCTATRACK = "Octatrack"
+OUTPUT_FORMAT_BOTH = "Both (M8 + Octatrack)"
+DEFAULT_OUTPUT_FORMAT = OUTPUT_FORMAT_M8
 
 # Audio Validation Limits
 MIN_SAMPLE_RATE = 8000

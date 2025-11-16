@@ -40,6 +40,7 @@ hiddenimports = [
     'm8_kitcreator.config',
     'm8_kitcreator.utils',
     'm8_kitcreator.audio_processor',
+    'm8_kitcreator.octatrack_writer',
     'm8_kitcreator.gui',
 ]
 
@@ -110,8 +111,8 @@ if sys.platform == 'darwin':
             'NSPrincipalClass': 'NSApplication',
             'NSHighResolutionCapable': 'True',
             'LSBackgroundOnly': 'False',
-            'CFBundleShortVersionString': '0.29.0',
-            'CFBundleVersion': '0.29.0',
+            'CFBundleShortVersionString': '0.30.0',
+            'CFBundleVersion': '0.30.0',
             'NSHumanReadableCopyright': 'Copyright © 2023-2025 Andy Tanguay. MIT License.',
         },
     )
