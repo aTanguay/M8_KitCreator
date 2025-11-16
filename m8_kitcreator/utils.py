@@ -6,6 +6,8 @@ Contains validation functions, helper functions, and other utilities.
 
 import os
 import wave
+from pydub import AudioSegment
+from pydub.silence import split_on_silence
 from m8_kitcreator import config
 
 
@@ -110,3 +112,81 @@ def check_directory_writable(directory_path):
         bool: True if directory is writable, False otherwise
     """
     return os.access(directory_path, os.W_OK)
+
+
+def get_audio_metadata(file_path):
+    """
+    Get metadata about an audio file.
+
+    Args:
+        file_path: Path to the audio file
+
+    Returns:
+        dict: Dictionary with 'channels' (int), 'duration_ms' (float), and 'duration_formatted' (str)
+              Returns None if file cannot be read
+    """
+    try:
+        with wave.open(file_path, 'rb') as wf:
+            params = wf.getparams()
+            nchannels = params.nchannels
+            nframes = params.nframes
+            framerate = params.framerate
+
+            duration_seconds = nframes / float(framerate)
+            duration_ms = duration_seconds * 1000
+
+            # Format as MM:SS.mmm
+            minutes = int(duration_seconds // 60)
+            seconds = duration_seconds % 60
+            duration_formatted = f"{minutes}:{seconds:06.3f}"
+
+            return {
+                'channels': nchannels,
+                'duration_ms': duration_ms,
+                'duration_formatted': duration_formatted,
+                'channel_label': 'M' if nchannels == 1 else 'S'
+            }
+    except Exception:
+        return None
+
+
+def calculate_trimmed_duration(file_path, silence_thresh=-50.0, min_silence_len=10):
+    """
+    Calculate the duration of audio after silence removal.
+
+    Args:
+        file_path: Path to the audio file
+        silence_thresh: Silence threshold in dBFS (default: -50.0)
+        min_silence_len: Minimum silence length in ms (default: 10)
+
+    Returns:
+        str: Formatted duration as MM:SS.mmm, or None if calculation fails
+    """
+    try:
+        # Load audio
+        audio = AudioSegment.from_wav(file_path)
+
+        # Split on silence (same logic as AudioProcessor)
+        chunks = split_on_silence(
+            audio,
+            silence_thresh=silence_thresh,
+            min_silence_len=min_silence_len
+        )
+
+        if chunks:
+            # Calculate total duration of all chunks
+            total_duration_ms = sum(len(chunk) for chunk in chunks)
+            # Add retained silence between chunks (1ms per gap)
+            total_duration_ms += (len(chunks) - 1) * config.DEFAULT_RETAINED_SILENCE
+        else:
+            # No silence detected, use original duration
+            total_duration_ms = len(audio)
+
+        # Format as MM:SS.mmm
+        duration_seconds = total_duration_ms / 1000.0
+        minutes = int(duration_seconds // 60)
+        seconds = duration_seconds % 60
+        return f"{minutes}:{seconds:06.3f}"
+
+    except Exception:
+        return None

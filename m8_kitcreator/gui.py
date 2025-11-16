@@ -23,7 +23,9 @@ from m8_kitcreator.audio_processor import AudioProcessor
 from m8_kitcreator.utils import (
     validate_wav_file,
     format_file_list_error,
-    check_directory_writable
+    check_directory_writable,
+    get_audio_metadata,
+    calculate_trimmed_duration
 )
 
 
@@ -319,10 +321,23 @@ class FileSelectorApp(_BaseWindow):
         self.file_listbox.delete(0, tk.END)
 
     def _refresh_file_list(self):
-        """Refresh the listbox display with numbered entries."""
+        """Refresh the listbox display with numbered entries and metadata."""
         self.file_listbox.delete(0, tk.END)
-        for i, file_name in enumerate(self.file_names, 1):
-            self.file_listbox.insert(tk.END, f"{i}. {file_name}")
+        for i, (file_name, file_path) in enumerate(zip(self.file_names, self.file_paths), 1):
+            # Get metadata
+            metadata = get_audio_metadata(file_path)
+            trimmed_duration = calculate_trimmed_duration(file_path)
+
+            if metadata and trimmed_duration:
+                # Format: "1. [M] filename.wav      0:03.456 -> 0:02.123"
+                channel_label = metadata['channel_label']
+                original_time = metadata['duration_formatted']
+                display_text = f"{i}. [{channel_label}] {file_name}      {original_time} -> {trimmed_duration}"
+            else:
+                # Fallback if metadata can't be read
+                display_text = f"{i}. {file_name}"
+
+            self.file_listbox.insert(tk.END, display_text)
 
     def move_file_up(self):
         """Move the selected file up in the list."""

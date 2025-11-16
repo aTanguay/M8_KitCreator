@@ -10,7 +10,7 @@ Contains all configuration values for UI, audio processing, and file handling.
 
 # Window Configuration
 WINDOW_TITLE = "KitBasher"
-WINDOW_WIDTH = 450  # Increased to prevent text cutoff
+WINDOW_WIDTH = 500  # Sized to accommodate file metadata display
 WINDOW_HEIGHT = 680  # Increased to show Merge and Exit buttons properly
 WINDOW_GEOMETRY = f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}"
 
@@ -20,7 +20,7 @@ SUBTITLE_FONT = ("Arial", 11)
 LABEL_FONT = ("Arial", 11)
 
 # Listbox Configuration
-LISTBOX_WIDTH = 30
+LISTBOX_WIDTH = 60  # Increased width to show M/S, original time, and trimmed time
 LISTBOX_HEIGHT = 16
 
 # Progress Bar Configuration
