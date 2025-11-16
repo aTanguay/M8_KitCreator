@@ -108,11 +108,13 @@ The app will automatically:
 
 ## What's New
 
-**New in v0.32:** Rebranded as KitBasher!
+**New in v0.32:** Rebranded as KitBasher with enhanced file metadata display!
 - **New name: KitBasher** - Better reflects multi-hardware support (M8 + Octatrack)
 - **Updated UI title** - Now says "Sliced Wav Kit Maker" instead of "Dirtywave M8..."
-- **Wider window** - Increased to 450px width to prevent instruction text cutoff
-- **Improved readability** - All UI text now displays properly without truncation
+- **File metadata display** - Shows M/S (mono/stereo), original duration, and trimmed duration for each file
+- **Optimized window size** - Resized to 500x680px for better visibility and readability
+- **Enhanced file list** - Format: "1. [M] filename.wav      0:03.456 -> 0:02.123"
+- **Improved spacing** - Better visual separation between filename and time information
 
 **New in v0.31:** Production-ready standalone builds!
 - **Fixed drag-and-drop** - Proper handling of filenames with spaces
@@ -207,6 +209,26 @@ Here's what the processed output looks like in an audio editor (showing cue mark
 ![Audio Output with Cue Markers](/images/OceanShot.png)
 
 Each vertical line represents a cue point that the M8 uses to identify slice boundaries.
+
+## Future Features
+
+The following features are planned for future releases (see [TASKS.md](TASKS.md) for complete roadmap):
+
+🎧 **Audio Preview (v0.33 - Planned)**
+- Preview individual files with silence trimming applied
+- Preview full kit before exporting
+- Double-click files to hear trimmed audio
+- "Preview Full Kit" button to hear complete output
+- See TASK-010 in TASKS.md for implementation details
+
+💡 **Additional Planned Features**
+- Configurable silence detection threshold
+- File reordering with drag-to-reorder
+- Batch processing for multiple kits
+- Preset management for common workflows
+- Command-line interface for automation
+
+See [TASKS.md](TASKS.md) for the complete feature roadmap and development priorities.
 
 ## Project Structure
 

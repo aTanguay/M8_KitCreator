@@ -255,14 +255,67 @@ def merge_files_threaded(self):
 
 ---
 
-### TASK-010: Add Preview Functionality
-**Priority:** LOW | **Effort:** 4-5 hours | **Impact:** MEDIUM
+### TASK-010: Add Audio Preview Functionality
+**Priority:** MEDIUM | **Effort:** 2-3 hours | **Impact:** HIGH
 
-**Actions:**
-- [ ] Add "Preview" button to play individual files
-- [ ] Show waveform visualization of selected file
-- [ ] Show audio file properties (duration, sample rate, channels)
-- [ ] Show total output duration estimate
+**User Request:** "I'd like to preview what the kit is going to sound like before making the final WAV."
+
+**Proposed Features:**
+1. **Per-file preview** - Double-click a file in the list to hear it with silence trimming applied
+2. **Full kit preview** - Play all trimmed samples in sequence to hear the complete output
+
+**Implementation Details:**
+
+**Dependencies:**
+- Add `simpleaudio` package for lightweight audio playback
+- Uses existing trimming logic from `utils.calculate_trimmed_duration()`
+
+**UI Changes:**
+- Option A (Simple): Double-click file to preview, add "Preview Full Kit" button
+- Option B (Rich): Add "▶" play buttons inline with each file, playback progress bar, volume control
+- Recommendation: Start with Option A for simplicity
+
+**Code Changes:**
+- [ ] Add `simpleaudio` to requirements.txt
+- [ ] Create `preview_trimmed_audio()` function in utils.py
+- [ ] Create `preview_full_kit()` function in utils.py
+- [ ] Add double-click event handler to file listbox in gui.py
+- [ ] Add "Preview Full Kit" button to GUI
+- [ ] Add "⏸ Stop Preview" button (shown during playback)
+- [ ] Use threading to prevent UI freeze during playback
+- [ ] Handle playback errors gracefully
+
+**Example Implementation:**
+```python
+# In utils.py
+def preview_trimmed_audio(file_path, silence_thresh=-50.0, min_silence_len=10):
+    """Load, trim silence, and play audio preview."""
+    import simpleaudio as sa
+    audio = AudioSegment.from_wav(file_path)
+    chunks = split_on_silence(audio, silence_thresh=silence_thresh, min_silence_len=min_silence_len)
+    if chunks:
+        trimmed = sum(chunks, AudioSegment.empty())
+    else:
+        trimmed = audio
+    playback = sa.play_buffer(
+        trimmed.raw_data,
+        num_channels=trimmed.channels,
+        bytes_per_sample=trimmed.sample_width,
+        sample_rate=trimmed.frame_rate
+    )
+    return playback  # Caller can use playback.stop()
+
+def preview_full_kit(file_paths, silence_thresh=-50.0, min_silence_len=10, retained_silence=1):
+    """Preview all files concatenated with trimming applied."""
+    # Similar to AudioProcessor but just plays instead of exporting
+```
+
+**Testing:**
+- [ ] Test with mono and stereo files
+- [ ] Test with various sample rates
+- [ ] Test stop functionality
+- [ ] Test multiple rapid clicks (prevent overlapping playback)
+- [ ] Test on macOS and Linux
 
 ---
 
