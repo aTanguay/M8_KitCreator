@@ -1,15 +1,28 @@
 """
-M8 Kit Creator - A tool for creating M8-compatible sliced audio kits.
+M8 Kit Creator - A tool for creating M8 and Octatrack compatible sliced audio kits.
 
 This package provides tools for concatenating WAV files with cue point markers
-that are compatible with the Dirtywave M8 hardware sampler.
+for the Dirtywave M8 hardware sampler and .ot metadata files for the Elektron Octatrack.
 """
 
-__version__ = "0.29.0"
+__version__ = "0.30.0"
 __author__ = "Andy Tanguay"
 __license__ = "MIT"
 
-from m8_kitcreator.audio_processor import AudioProcessor
-from m8_kitcreator.gui import FileSelectorApp
+# Lazy imports to avoid importing GUI dependencies during testing
+__all__ = ["AudioProcessor", "FileSelectorApp", "OctatrackWriter"]
 
-__all__ = ["AudioProcessor", "FileSelectorApp"]
+
+def __getattr__(name):
+    """Lazy import of modules to avoid importing tkinter during testing."""
+    if name == "AudioProcessor":
+        from m8_kitcreator.audio_processor import AudioProcessor
+        return AudioProcessor
+    elif name == "FileSelectorApp":
+        from m8_kitcreator.gui import FileSelectorApp
+        return FileSelectorApp
+    elif name == "OctatrackWriter":
+        from m8_kitcreator.octatrack_writer import OctatrackWriter
+        return OctatrackWriter
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
