@@ -296,14 +296,16 @@ class FileSelectorApp(_BaseWindow):
         if not files:
             return
 
-        # Clear existing selections
-        self.file_names.clear()
-        self.file_paths.clear()
-        self.file_listbox.delete(0, tk.END)
-
         # Validate and add files
         invalid_files = []
+        duplicate_count = 0
+        
         for file_path in files:
+            # Check for duplicates
+            if file_path in self.file_paths:
+                duplicate_count += 1
+                continue
+
             is_valid, error_msg = validate_wav_file(file_path)
             if is_valid:
                 file_name = os.path.basename(file_path)
@@ -315,14 +317,20 @@ class FileSelectorApp(_BaseWindow):
         # Refresh the listbox display
         self._refresh_file_list()
 
-        # Show warning if any files were invalid
-        if invalid_files:
-            error_list = format_file_list_error(invalid_files)
-            messagebox.showwarning(
-                config.MSG_INVALID_FILES_TITLE,
-                f"The following files could not be loaded:\n\n{error_list}\n\n"
-                f"Valid files: {len(self.file_paths)}"
-            )
+        # Show warning if any files were invalid or duplicates
+        print(f"DEBUG: invalid_files={len(invalid_files)}, duplicate_count={duplicate_count}")
+        if invalid_files or duplicate_count > 0:
+            message = ""
+            if invalid_files:
+                error_list = format_file_list_error(invalid_files)
+                message += f"The following files could not be loaded:\n\n{error_list}\n\n"
+            
+            if duplicate_count > 0:
+                message += f"Skipped {duplicate_count} duplicate file(s).\n\n"
+
+            message += f"Valid files added: {len(files) - len(invalid_files) - duplicate_count}"
+            
+            messagebox.showwarning(config.MSG_INVALID_FILES_TITLE, message)
 
     def clear_files(self):
         """Clear all selected files from the list."""
@@ -650,21 +658,29 @@ class FileSelectorApp(_BaseWindow):
         invalid_files = []
         valid_count = 0
 
+        # Validate and add files (same logic as select_files)
+        invalid_files = []
+        valid_count = 0
+        duplicate_count = 0
+
         for file_path in files:
             # Check if it's a WAV file
             if not file_path.lower().endswith('.wav'):
                 invalid_files.append((os.path.basename(file_path), "Not a WAV file"))
                 continue
 
+            # Check for duplicates
+            if file_path in self.file_paths:
+                duplicate_count += 1
+                continue
+
             # Validate the file
             is_valid, error_msg = validate_wav_file(file_path)
             if is_valid:
                 file_name = os.path.basename(file_path)
-                # Check if file is already in the list
-                if file_path not in self.file_paths:
-                    self.file_names.append(file_name)
-                    self.file_paths.append(file_path)
-                    valid_count += 1
+                self.file_names.append(file_name)
+                self.file_paths.append(file_path)
+                valid_count += 1
             else:
                 invalid_files.append((os.path.basename(file_path), error_msg))
 
@@ -673,14 +689,19 @@ class FileSelectorApp(_BaseWindow):
             self._refresh_file_list()
             print(f"Added {valid_count} file(s) via drag-and-drop")
 
-        # Show warning if any files were invalid
-        if invalid_files:
-            error_list = format_file_list_error(invalid_files)
-            messagebox.showwarning(
-                config.MSG_INVALID_FILES_TITLE,
-                f"The following files could not be added:\n\n{error_list}\n\n"
-                f"Valid files added: {valid_count}"
-            )
+        # Show warning if any files were invalid or duplicates
+        if invalid_files or duplicate_count > 0:
+            message = ""
+            if invalid_files:
+                error_list = format_file_list_error(invalid_files)
+                message += f"The following files could not be added:\n\n{error_list}\n\n"
+            
+            if duplicate_count > 0:
+                message += f"Skipped {duplicate_count} duplicate file(s).\n\n"
+
+            message += f"Valid files added: {valid_count}"
+
+            messagebox.showwarning(config.MSG_INVALID_FILES_TITLE, message)
 
         return event.action
 
