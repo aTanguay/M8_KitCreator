@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "m8-kitcreator"
+version = "0.25.0"
+description = "A tool for creating M8-compatible sliced audio kits"
+readme = "README.md"
+authors = [
+  { name = "Andy Tanguay" },
+]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "pydub>=0.25.1",
+    "customtkinter>=5.0.0",
+    "tkinterdnd2>=0.3.0",
+    "static-ffmpeg>=2.5",
+]
+
+[project.scripts]
+m8-kitcreator = "M8_KitBasher:main"
+
+[tool.setuptools]
+packages = ["m8_kitcreator"]
+py-modules = ["M8_KitBasher"]

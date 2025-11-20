@@ -93,15 +93,10 @@ class TestAudioProcessorInit(unittest.TestCase):
             self.assertTrue(callable(processor.concatenate_audio_files))
 
             # Check private methods exist
-            private_methods = [
-                '_process_silence',
-                '_calculate_frame_position',
-                '_export_audio',
-                '_add_cue_points',
-                '_generate_ot_file',
-                '_show_success_message'
-            ]
-            for method in private_methods:
+            for method in ['concatenate_audio_files', '_process_silence',
+                      '_calculate_frame_position', '_export_audio',
+                      '_add_cue_points', '_generate_ot_file',
+                      '_log_success_message']:
                 self.assertTrue(hasattr(processor, method), f"Method {method} not found")
                 self.assertTrue(callable(getattr(processor, method)), f"Method {method} not callable")
 

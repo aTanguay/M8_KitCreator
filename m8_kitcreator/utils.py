@@ -6,12 +6,13 @@ Contains validation functions, helper functions, and other utilities.
 
 import os
 import wave
+from typing import Tuple, Optional, List, Dict, Union
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from m8_kitcreator import config
 
 
-def validate_wav_file(file_path):
+def validate_wav_file(file_path: str) -> Tuple[bool, Optional[str]]:
     """
     Validate that a file is a readable WAV file.
 
@@ -70,7 +71,7 @@ def validate_wav_file(file_path):
     return True, None
 
 
-def get_channel_description(num_channels):
+def get_channel_description(num_channels: int) -> str:
     """
     Get a human-readable description of channel configuration.
 
@@ -88,7 +89,7 @@ def get_channel_description(num_channels):
         return f"{num_channels} channels (multi-channel)"
 
 
-def format_file_list_error(invalid_files):
+def format_file_list_error(invalid_files: List[Tuple[str, str]]) -> str:
     """
     Format a list of invalid files into a user-friendly error message.
 
@@ -101,7 +102,7 @@ def format_file_list_error(invalid_files):
     return "\n".join([f"• {name}: {msg}" for name, msg in invalid_files])
 
 
-def check_directory_writable(directory_path):
+def check_directory_writable(directory_path: str) -> bool:
     """
     Check if a directory is writable.
 
@@ -114,7 +115,7 @@ def check_directory_writable(directory_path):
     return os.access(directory_path, os.W_OK)
 
 
-def get_audio_metadata(file_path):
+def get_audio_metadata(file_path: str) -> Optional[Dict[str, Union[int, float, str]]]:
     """
     Get metadata about an audio file.
 
@@ -150,7 +151,7 @@ def get_audio_metadata(file_path):
         return None
 
 
-def calculate_trimmed_duration(file_path, silence_thresh=-50.0, min_silence_len=10):
+def calculate_trimmed_duration(file_path: str, silence_thresh: float = -50.0, min_silence_len: int = 10) -> Optional[str]:
     """
     Calculate the duration of audio after silence removal.
 

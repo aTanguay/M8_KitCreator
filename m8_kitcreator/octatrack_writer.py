@@ -6,6 +6,10 @@ Based on the reverse-engineered format from OctaChainer by KaiDrange.
 """
 
 import struct
+import logging
+from typing import List, Optional, Dict
+
+logger = logging.getLogger(__name__)
 
 
 class OctatrackWriter:
@@ -35,8 +39,10 @@ class OctatrackWriter:
     DEFAULT_STRETCH = 0  # 0=Off, 1=Normal, 2=Beat
     DEFAULT_QUANTIZE = 0  # Trigger quantization
 
-    def __init__(self, output_path, sample_rate=44100, total_samples=0,
-                 tempo=None, gain=None, loop_type=None, stretch=None, quantize=None):
+    def __init__(self, output_path: str, sample_rate: int = 44100, total_samples: int = 0,
+                 tempo: Optional[float] = None, gain: Optional[int] = None,
+                 loop_type: Optional[int] = None, stretch: Optional[int] = None,
+                 quantize: Optional[int] = None):
         """
         Initialize the Octatrack writer.
 
@@ -62,9 +68,9 @@ class OctatrackWriter:
         self.quantize = quantize if quantize is not None else self.DEFAULT_QUANTIZE
 
         # Slice data
-        self.slices = []
+        self.slices: List[Dict[str, int]] = []
 
-    def add_slice(self, start_point, end_point, loop_point=None):
+    def add_slice(self, start_point: int, end_point: int, loop_point: Optional[int] = None) -> None:
         """
         Add a slice to the .ot file.
 
@@ -86,7 +92,7 @@ class OctatrackWriter:
             'loop': int(loop_point)
         })
 
-    def write(self):
+    def write(self) -> bool:
         """
         Write the .ot file to disk.
 
@@ -165,10 +171,10 @@ class OctatrackWriter:
             return True
 
         except Exception as e:
-            print(f"Error writing .ot file: {e}")
+            logger.error(f"Error writing .ot file: {e}")
             return False
 
-    def _calculate_bars_length(self):
+    def _calculate_bars_length(self) -> float:
         """
         Calculate the length in bars based on sample count and tempo.
 
@@ -193,7 +199,7 @@ class OctatrackWriter:
 
         return max(0.25, bars_rounded)  # Minimum 0.25 bars
 
-    def _calculate_checksum(self, data):
+    def _calculate_checksum(self, data: bytearray) -> int:
         """
         Calculate the checksum for the .ot file.
 

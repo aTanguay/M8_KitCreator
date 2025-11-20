@@ -6,9 +6,18 @@ Contains all user interface components and event handling.
 
 import os
 import threading
+import logging
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
+from typing import List, Optional, Tuple
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Try to import tkinterdnd2 for drag-and-drop support
 try:
@@ -20,6 +29,7 @@ except ImportError:
 
 from m8_kitcreator import config
 from m8_kitcreator.audio_processor import AudioProcessor
+from m8_kitcreator.exceptions import M8KitCreatorError
 from m8_kitcreator.utils import (
     validate_wav_file,
     format_file_list_error,
@@ -54,8 +64,8 @@ class FileSelectorApp(_BaseWindow):
         self.geometry(config.WINDOW_GEOMETRY)
 
         # State: Lists to store selected file names and their full paths
-        self.file_names = []
-        self.file_paths = []
+        self.file_names: List[str] = []
+        self.file_paths: List[str] = []
 
         # Output format selection
         self.output_format = tk.StringVar(value=config.DEFAULT_OUTPUT_FORMAT)
@@ -470,9 +480,12 @@ class FileSelectorApp(_BaseWindow):
                 # Update UI after completion (in main thread)
                 self.after(0, lambda: self._on_merge_complete(success))
 
-            except Exception as e:
-                print(f"Error during merge: {e}")
+            except M8KitCreatorError as e:
+                logger.error(f"M8 Kit Creator Error: {e}")
                 self.after(0, lambda: self._on_merge_error(str(e)))
+            except Exception as e:
+                logger.error(f"Unexpected error during merge: {e}", exc_info=True)
+                self.after(0, lambda: self._on_merge_error(f"Unexpected error: {str(e)}"))
 
         thread = threading.Thread(target=process, daemon=True)
         thread.start()

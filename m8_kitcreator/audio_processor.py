@@ -7,13 +7,17 @@ Handles all audio concatenation, silence removal, and cue point generation.
 import os
 import struct
 import wave
-from tkinter import messagebox
+import logging
+from typing import List, Optional, Callable, Union
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
 from m8_kitcreator import config
 from m8_kitcreator.utils import get_channel_description
 from m8_kitcreator.octatrack_writer import OctatrackWriter
+from m8_kitcreator.exceptions import AudioProcessingError, ExportError, OctatrackError
+
+logger = logging.getLogger(__name__)
 
 # Configure pydub to use bundled ffmpeg if available
 try:
@@ -25,11 +29,11 @@ try:
     print(f"Using bundled ffmpeg: {ffmpeg_path}")
 except ImportError:
     # static-ffmpeg not available, will use system ffmpeg
-    print("static-ffmpeg not available, using system ffmpeg")
+    logger.info("static-ffmpeg not available, using system ffmpeg")
 except Exception as e:
     # Failed to get ffmpeg, will use system default
-    print(f"Warning: Could not configure static ffmpeg: {e}")
-    print("Will attempt to use system ffmpeg")
+    logger.warning(f"Could not configure static ffmpeg: {e}")
+    logger.info("Will attempt to use system ffmpeg")
 
 
 class AudioProcessor:
@@ -42,11 +46,11 @@ class AudioProcessor:
     """
 
     def __init__(self,
-                 marker_duration_ms=config.DEFAULT_MARKER_DURATION_MS,
-                 silence_thresh=config.DEFAULT_SILENCE_THRESHOLD,
-                 min_silence_len=config.DEFAULT_MIN_SILENCE_LEN,
-                 retained_silence=config.DEFAULT_RETAINED_SILENCE,
-                 force_mono=False):
+                 marker_duration_ms: int = config.DEFAULT_MARKER_DURATION_MS,
+                 silence_thresh: float = config.DEFAULT_SILENCE_THRESHOLD,
+                 min_silence_len: int = config.DEFAULT_MIN_SILENCE_LEN,
+                 retained_silence: int = config.DEFAULT_RETAINED_SILENCE,
+                 force_mono: bool = False):
         """
         Initialize the AudioProcessor with processing parameters.
 
@@ -63,8 +67,9 @@ class AudioProcessor:
         self.retained_silence = retained_silence
         self.force_mono = force_mono
 
-    def concatenate_audio_files(self, file_paths, output_file, progress_callback=None,
-                                output_format=None):
+    def concatenate_audio_files(self, file_paths: List[str], output_file: str,
+                                progress_callback: Optional[Callable[[int, int], None]] = None,
+                                output_format: Optional[str] = None) -> bool:
         """
         Concatenate audio files with M8-compatible cue markers and optional Octatrack .ot file.
 
@@ -81,7 +86,12 @@ class AudioProcessor:
             output_format: Output format - M8, Octatrack, or Both (default: M8)
 
         Returns:
-            bool: True if successful, False if an error occurred
+            bool: True if successful
+
+        Raises:
+            AudioProcessingError: If audio loading or processing fails
+            ExportError: If export fails
+            OctatrackError: If Octatrack file generation fails
         """
         # Default to M8 format if not specified
         if output_format is None:
@@ -106,12 +116,8 @@ class AudioProcessor:
             try:
                 audio = AudioSegment.from_wav(file_path)
             except Exception as e:
-                print(f"Error loading {file_path}: {e}")
-                messagebox.showerror(
-                    "File Load Error",
-                    f"Failed to load {os.path.basename(file_path)}:\n{str(e)}"
-                )
-                return False
+                logger.error(f"Error loading {file_path}: {e}")
+                raise AudioProcessingError(f"Failed to load {os.path.basename(file_path)}: {str(e)}")
 
             # On first file, determine target channel count and create markers
             if i == 0:
@@ -158,24 +164,21 @@ class AudioProcessor:
             progress_callback(total_files, total_files)
 
         # Export audio file
-        if not self._export_audio(concatenated_audio, output_file, target_channels):
-            return False
+        self._export_audio(concatenated_audio, output_file, target_channels)
 
         # Add cue points to WAV file (for M8 and Both)
         if output_format in [config.OUTPUT_FORMAT_M8, config.OUTPUT_FORMAT_BOTH]:
-            if not self._add_cue_points(output_file, cue_positions):
-                return False
+            self._add_cue_points(output_file, cue_positions)
 
         # Generate Octatrack .ot file (for Octatrack and Both)
         if output_format in [config.OUTPUT_FORMAT_OCTATRACK, config.OUTPUT_FORMAT_BOTH]:
-            if not self._generate_ot_file(output_file, concatenated_audio, cue_positions):
-                return False
+            self._generate_ot_file(output_file, concatenated_audio, cue_positions)
 
         # Success!
-        self._show_success_message(target_channels, cue_positions, total_files, output_format)
+        self._log_success_message(target_channels, cue_positions, total_files, output_format)
         return True
 
-    def _process_silence(self, audio, retain_silence):
+    def _process_silence(self, audio: AudioSegment, retain_silence: AudioSegment) -> AudioSegment:
         """
         Process audio to remove silence.
 
@@ -204,7 +207,7 @@ class AudioProcessor:
 
         return processed_audio
 
-    def _calculate_frame_position(self, audio):
+    def _calculate_frame_position(self, audio: AudioSegment) -> int:
         """
         Calculate the current frame position in the audio.
 
@@ -221,7 +224,7 @@ class AudioProcessor:
         frame_position = sample_count // audio.channels
         return frame_position
 
-    def _export_audio(self, audio, output_file, target_channels):
+    def _export_audio(self, audio: AudioSegment, output_file: str, target_channels: int) -> None:
         """
         Export audio to WAV file.
 
@@ -230,23 +233,18 @@ class AudioProcessor:
             output_file: Path for output file
             target_channels: Number of channels in output
 
-        Returns:
-            bool: True if successful, False otherwise
+        Raises:
+            ExportError: If export fails
         """
         try:
             audio.export(output_file, format="wav")
             channel_desc = get_channel_description(target_channels)
-            print(f"Audio exported successfully! {channel_desc}")
-            return True
+            logger.info(f"Audio exported successfully! {channel_desc}")
         except Exception as e:
-            print(f"Error exporting audio: {e}")
-            messagebox.showerror(
-                "Export Error",
-                f"Failed to export audio:\n{str(e)}"
-            )
-            return False
+            logger.error(f"Error exporting audio: {e}")
+            raise ExportError(f"Failed to export audio: {str(e)}")
 
-    def _add_cue_points(self, wav_file, cue_positions):
+    def _add_cue_points(self, wav_file: str, cue_positions: List[int]) -> None:
         """
         Add cue point markers to a WAV file.
 
@@ -254,8 +252,8 @@ class AudioProcessor:
             wav_file: Path to WAV file to add cue points to
             cue_positions: List of frame positions for cue points
 
-        Returns:
-            bool: True if successful, False otherwise
+        Raises:
+            ExportError: If adding cue points fails
         """
         try:
             # Read WAV file
@@ -281,17 +279,11 @@ class AudioProcessor:
                 wf.writeframes(data)
                 wf._file.write(cue_chunk)
 
-            return True
-
         except Exception as e:
-            print(f"Error adding cue points: {e}")
-            messagebox.showerror(
-                "Cue Point Error",
-                f"Audio exported but failed to add cue points:\n{str(e)}"
-            )
-            return False
+            logger.error(f"Error adding cue points: {e}")
+            raise ExportError(f"Audio exported but failed to add cue points: {str(e)}")
 
-    def _generate_ot_file(self, wav_file, audio, cue_positions):
+    def _generate_ot_file(self, wav_file: str, audio: AudioSegment, cue_positions: List[int]) -> None:
         """
         Generate Octatrack .ot metadata file.
 
@@ -300,8 +292,8 @@ class AudioProcessor:
             audio: AudioSegment containing the audio data
             cue_positions: List of frame positions for slices
 
-        Returns:
-            bool: True if successful, False otherwise
+        Raises:
+            OctatrackError: If .ot file generation fails
         """
         try:
             # Create .ot filename by replacing .wav extension
@@ -327,23 +319,17 @@ class AudioProcessor:
                 ot_writer.add_slice(start_point, end_point)
 
             # Write the .ot file
-            if ot_writer.write():
-                print(f"Octatrack .ot file generated: {ot_file}")
-                return True
-            else:
-                return False
+            ot_writer.write()
+            logger.info(f"Octatrack .ot file generated: {ot_file}")
 
         except Exception as e:
-            print(f"Error generating .ot file: {e}")
-            messagebox.showerror(
-                "Octatrack File Error",
-                f"Audio exported but failed to generate .ot file:\n{str(e)}"
-            )
-            return False
+            logger.error(f"Error generating .ot file: {e}")
+            raise OctatrackError(f"Audio exported but failed to generate .ot file: {str(e)}")
 
-    def _show_success_message(self, target_channels, cue_positions, num_files, output_format=None):
+    def _log_success_message(self, target_channels: int, cue_positions: List[int],
+                                   num_files: int, output_format: Optional[str] = None) -> None:
         """
-        Display success message to user.
+        Log success message.
 
         Args:
             target_channels: Number of channels in output
@@ -356,13 +342,5 @@ class AudioProcessor:
             output_format = config.OUTPUT_FORMAT_M8
 
         channel_desc = get_channel_description(target_channels)
-        print(f"Output format: {output_format}, {channel_desc}, {len(cue_positions)} cue points")
-
-        # Build success message
-        message = f"Files have been merged successfully!\n\n"
-        message += f"Format: {output_format}\n"
-        message += f"Output: {channel_desc}\n"
-        message += f"Cue points: {len(cue_positions)}\n"
-        message += f"Files merged: {num_files}"
-
-        messagebox.showinfo(config.MSG_SUCCESS_TITLE, message)
+        logger.info(f"Output format: {output_format}, {channel_desc}, {len(cue_positions)} cue points")
+        logger.info(f"Files merged: {num_files}")
